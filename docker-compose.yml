@@ -1,0 +1,29 @@
+version: "3.1"
+services:
+  bot-database:
+    image: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      bot-network:
+        aliases:
+          - postgres
+  go-bot:
+    depends_on:
+      - bot-database
+    build: .
+    environment:
+      DATABASE_URI: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_USER}?sslmode=disable
+    networks:
+      bot-network:
+        aliases:
+          - bot
+
+networks:
+  bot-network:
+
+volumes:
+  db-data:
