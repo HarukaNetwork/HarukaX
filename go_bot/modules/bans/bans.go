@@ -19,8 +19,12 @@ func ban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	message := u.EffectiveMessage
 
 	// Permission checks
-	chat_status.RequireBotAdmin(chat)
-	chat_status.RequireUserAdmin(chat, user.Id, nil)
+	if !chat_status.RequireBotAdmin(chat) {
+		return nil
+	}
+	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+		return nil
+	}
 
 	userId, _ := extraction.ExtractUserAndText(message, args)
 	if userId == 0 {
@@ -65,8 +69,12 @@ func tempBan(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	message := u.EffectiveMessage
 
 	// Permission checks
-	chat_status.RequireBotAdmin(chat)
-	chat_status.RequireUserAdmin(chat, user.Id, nil)
+	if !chat_status.RequireBotAdmin(chat) {
+		return nil
+	}
+	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+		return nil
+	}
 
 	userId, reason := extraction.ExtractUserAndText(message, args)
 	if userId == 0 {
@@ -126,8 +134,12 @@ func kick(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	message := u.EffectiveMessage
 
 	// Permission checks
-	chat_status.RequireBotAdmin(chat)
-	chat_status.RequireUserAdmin(chat, user.Id, nil)
+	if !chat_status.RequireBotAdmin(chat) {
+		return nil
+	}
+	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+		return nil
+	}
 
 	userId, _ := extraction.ExtractUserAndText(message, args)
 	if userId == 0 {
@@ -174,7 +186,9 @@ func kickme(_ ext.Bot, u *gotgbot.Update) error {
 	message := u.EffectiveMessage
 
 	// Permission checks
-	chat_status.RequireBotAdmin(chat)
+	if !chat_status.RequireBotAdmin(chat) {
+		return nil
+	}
 
 	if chat_status.IsUserAdmin(chat, user.Id, nil) {
 		_, err := message.ReplyText("Admin sir pls ;_;")
@@ -236,10 +250,6 @@ func unban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	_, err = message.ReplyText("Fine, I'll allow it, this time...")
 	error_handling.HandleErrorGracefully(err)
 	return nil
-
-
-
-
 }
 
 
