@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:294c7377a21a60fe93f0025b2fd25a94d5909bd74714ce29da3907bd19a73cf4"
+  digest = "1:cbe05df2244d2a84666868a734d8ed0c69f6cdecde0b3928279e629635441c56"
   name = "github.com/PaulSonOfLars/gotgbot"
   packages = [
     ".",
@@ -13,7 +13,7 @@
     "parsemode",
   ]
   pruneopts = "UT"
-  revision = "46c9efb572a80af783cbdba9d2cfb6d629a42115"
+  revision = "22bc5c2c3d0df0f329d6c40545d99dd7eb2eca0c"
 
 [[projects]]
   digest = "1:d02b94ed7089fc72fcd2e89c89df858c843470fe36788df39bf45e074293165e"
@@ -79,15 +79,15 @@
   name = "golang.org/x/crypto"
   packages = ["pbkdf2"]
   pruneopts = "UT"
-  revision = "a29dc8fdc73485234dbef99ebedb95d2eced08de"
+  revision = "e1dfcc566284e143ba8f9afbb3fa563f2a0d212b"
 
 [[projects]]
   branch = "master"
-  digest = "1:157e5158a7f29d6633eed502880463aa43de3c36d451c7051591efd12f455ac8"
+  digest = "1:4fc43e824f7e546353de724c00507b1d9c0bab56344b10c2330a97f166a0fba7"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "a129542de9ae0895210abff9c95d67a1f33cb93d"
+  revision = "a5b02f93d862f065920dd6a40dddc66b60d0dec4"
 
 [[projects]]
   digest = "1:999d566ad1ae4303c456af5a155f7b42401cca4fd33552567ed9dd997b107a08"
@@ -105,6 +105,7 @@
     "github.com/PaulSonOfLars/gotgbot/ext",
     "github.com/PaulSonOfLars/gotgbot/handlers",
     "github.com/PaulSonOfLars/gotgbot/handlers/Filters",
+    "github.com/PaulSonOfLars/gotgbot/parsemode",
     "github.com/go-pg/pg",
     "github.com/go-pg/pg/orm",
     "github.com/joho/godotenv",
