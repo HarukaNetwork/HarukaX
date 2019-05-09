@@ -38,3 +38,8 @@ func ExtractTime(m *ext.Message, timeVal string) int64 {
 		return -1
 	}
 }
+
+func FormatText(format string, args ...string) string {
+	r := strings.NewReplacer(args...)
+	return r.Replace(format)
+}

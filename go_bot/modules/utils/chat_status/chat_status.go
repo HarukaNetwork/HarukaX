@@ -89,6 +89,39 @@ func IsUserInChat(chat *ext.Chat, userId int) bool {
 	}
 }
 
+func CanPromote(bot ext.Bot, chat *ext.Chat) bool {
+	botChatMember, err := chat.GetMember(bot.Id)
+	error_handling.HandleErrorGracefully(err)
+	if !botChatMember.CanPromoteMembers {
+		_, err := bot.SendMessage(chat.Id, "I can't promote/demote people here! Make sure I'm admin and can appoint new admins.")
+		error_handling.HandleErrorGracefully(err)
+		return false
+	}
+	return true
+}
+
+func CanPin(bot ext.Bot, chat *ext.Chat) bool {
+	botChatMember, err := chat.GetMember(bot.Id)
+	error_handling.HandleErrorGracefully(err)
+	if !botChatMember.CanPinMessages {
+		_, err := bot.SendMessage(chat.Id, "I can't pin messages here! Make sure I'm admin and can pin messages.")
+		error_handling.HandleErrorGracefully(err)
+		return false
+	}
+	return true
+}
+
+func CanRestrict(bot ext.Bot, chat *ext.Chat) bool {
+	botChatMember, err := chat.GetMember(bot.Id)
+	error_handling.HandleErrorGracefully(err)
+	if !botChatMember.CanRestrictMembers{
+		_, err := bot.SendMessage(chat.Id, "I can't restrict people here! Make sure I'm admin and can appoint new admins.")
+		error_handling.HandleErrorGracefully(err)
+		return false
+	}
+	return true
+}
+
 func contains(s []string, e string) bool {
 	for _, a := range s {
 		if a == e {

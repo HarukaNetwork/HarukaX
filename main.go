@@ -5,6 +5,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/ext"
 	"github.com/PaulSonOfLars/gotgbot/handlers"
 	"github.com/atechnohazard/ginko/go_bot"
+	"github.com/atechnohazard/ginko/go_bot/modules/admin"
 	"github.com/atechnohazard/ginko/go_bot/modules/bans"
 	"github.com/atechnohazard/ginko/go_bot/modules/sql"
 	"github.com/atechnohazard/ginko/go_bot/modules/users"
@@ -20,6 +21,7 @@ func main() {
 	// Add module handlers
 	bans.LoadBans(u)
 	users.LoadUsers(u)
+	admin.LoadAdmin(u)
 
 	sql.EnsureBotInDb(u)
 

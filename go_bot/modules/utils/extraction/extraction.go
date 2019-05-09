@@ -79,3 +79,8 @@ func ExtractUserAndText(m *ext.Message, args []string) (int, string) {
 	}
 	return userId, text
 }
+
+func ExtractUser(message *ext.Message, args []string) int {
+	userId, _ := ExtractUserAndText(message, args)
+	return userId
+}
