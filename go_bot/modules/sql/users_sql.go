@@ -33,13 +33,13 @@ type ChatMembers struct {
 	User       int    `ph:"fk:UserId"`
 }
 
-// Insertion lock
-var lock sync.Mutex
+// Insertion usersLock
+var usersLock sync.Mutex
 
 func EnsureBotInDb(u *gotgbot.Updater) {
-	// lock and defer unlock for thread safety
-	lock.Lock()
-	defer lock.Unlock()
+	// usersLock and defer unlock for thread safety
+	usersLock.Lock()
+	defer usersLock.Unlock()
 	models := []interface{}{&Users{}, &Chats{}, &ChatMembers{}}
 	for _, model := range models {
 		_ = SESSION.CreateTable(model, &orm.CreateTableOptions{FKConstraints: true})
@@ -55,9 +55,9 @@ func EnsureBotInDb(u *gotgbot.Updater) {
 }
 
 func UpdateUser(userId int, username string, chatId string, chatName string) {
-	// lock and defer
-	lock.Lock()
-	defer lock.Unlock()
+	// usersLock and defer
+	usersLock.Lock()
+	defer usersLock.Unlock()
 	username = strings.ToLower(username)
 
 	// insert/update user
@@ -146,8 +146,8 @@ func NumUsers() int {
 }
 
 func DelUser(userId int) bool {
-	lock.Lock()
-	defer lock.Unlock()
+	usersLock.Lock()
+	defer usersLock.Unlock()
 
 	user := &Users{UserId: userId}
 	err := SESSION.Select(user)

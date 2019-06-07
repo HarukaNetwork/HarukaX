@@ -39,9 +39,9 @@ func IsUserAdmin(chat *ext.Chat, userId int, member *ext.ChatMember) bool {
 		member = mem
 	}
 	if member.Status == "administrator" || member.Status == "creator" {
-		return false
-	} else {
 		return true
+	} else {
+		return false
 	}
 }
 
