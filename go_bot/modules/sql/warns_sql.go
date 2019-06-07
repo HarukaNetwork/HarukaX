@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"github.com/atechnohazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/go-pg/pg/orm"
-	"sync"
 )
 
 type Warns struct {
 	UserId   string `sql:",pk"`
 	ChatId   string `sql:",pk"`
-	NumWarns int `sql:",default:0"`
+	NumWarns int    `sql:",default:0"`
 	Reasons  []string
 }
 
@@ -34,12 +33,7 @@ type WarnSettings struct {
 	SoftWarn  bool   `sql:",default:false"`
 }
 
-// Insertion usersLock
-var warnLock sync.Mutex
-
 func init() {
-	warnLock.Lock()
-	defer warnLock.Unlock()
 	models := []interface{}{&Warns{}, &WarnFilters{}, &WarnSettings{}}
 	for _, model := range models {
 		_ = SESSION.CreateTable(model, &orm.CreateTableOptions{FKConstraints: true})
@@ -47,7 +41,6 @@ func init() {
 }
 
 func WarnUser(userId string, chatId string, reason string) (int, []string) {
-
 	warnedUser := &Warns{UserId: userId, ChatId: chatId}
 	err := SESSION.Select(warnedUser)
 	error_handling.HandleErrorGracefully(err)
@@ -64,9 +57,6 @@ func WarnUser(userId string, chatId string, reason string) (int, []string) {
 }
 
 func RemoveWarn(userId string, chatId string) bool {
-	warnLock.Lock()
-	defer warnLock.Unlock()
-
 	removed := false
 	warnedUser := &Warns{UserId: userId, ChatId: chatId}
 	err := SESSION.Select(warnedUser)
@@ -82,9 +72,6 @@ func RemoveWarn(userId string, chatId string) bool {
 }
 
 func ResetWarns(userId string, chatId string) {
-	warnLock.Lock()
-	defer warnLock.Unlock()
-
 	warnedUser := &Warns{UserId: userId, ChatId: chatId}
 	err := SESSION.Select(warnedUser)
 
@@ -106,18 +93,12 @@ func GetWarns(userId string, chatId string) (int, []string) {
 }
 
 func AddWarnFilter(chatId string, keyword string, reply string) {
-	warnLock.Lock()
-	defer warnLock.Unlock()
-
 	warnFilter := &WarnFilters{ChatId: chatId, Keyword: keyword, Reply: reply}
 	err := SESSION.Insert(warnFilter)
 	error_handling.HandleErrorGracefully(err)
 }
 
 func RemoveWarnFilter(chatId string, keyword string) bool {
-	warnLock.Lock()
-	defer warnLock.Unlock()
-
 	warnFilter := &WarnFilters{ChatId: chatId, Keyword: keyword}
 	err := SESSION.Select(warnFilter)
 	if err == nil {
@@ -140,9 +121,6 @@ func GetChatWarnTriggers(chatId string) *WarnFilters {
 }
 
 func GetWarnFilter(chatId string, keyword string) *WarnFilters {
-	warnLock.Lock()
-	defer warnLock.Unlock()
-
 	warnFilter := &WarnFilters{ChatId: chatId, Keyword: keyword}
 	err := SESSION.Select(warnFilter)
 
@@ -154,9 +132,6 @@ func GetWarnFilter(chatId string, keyword string) *WarnFilters {
 }
 
 func SetWarnLimit(chatId string, warnLimit int) {
-	warnLock.Lock()
-	defer warnLock.Unlock()
-
 	warnSetting := &WarnSettings{ChatId: chatId}
 	err := SESSION.Select(warnSetting)
 
@@ -170,9 +145,6 @@ func SetWarnLimit(chatId string, warnLimit int) {
 }
 
 func SetWarnStrength(chatId string, softWarn bool) {
-	warnLock.Lock()
-	defer warnLock.Unlock()
-
 	warnSetting := &WarnSettings{ChatId: chatId}
 	err := SESSION.Select(warnSetting)
 

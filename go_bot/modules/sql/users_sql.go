@@ -6,7 +6,6 @@ import (
 	"github.com/atechnohazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/go-pg/pg/orm"
 	"strings"
-	"sync"
 )
 
 type Users struct {
@@ -33,13 +32,8 @@ type ChatMembers struct {
 	User       int    `ph:"fk:UserId"`
 }
 
-// Insertion usersLock
-var usersLock sync.Mutex
-
 func EnsureBotInDb(u *gotgbot.Updater) {
 	// usersLock and defer unlock for thread safety
-	usersLock.Lock()
-	defer usersLock.Unlock()
 	models := []interface{}{&Users{}, &Chats{}, &ChatMembers{}}
 	for _, model := range models {
 		_ = SESSION.CreateTable(model, &orm.CreateTableOptions{FKConstraints: true})
@@ -55,9 +49,6 @@ func EnsureBotInDb(u *gotgbot.Updater) {
 }
 
 func UpdateUser(userId int, username string, chatId string, chatName string) {
-	// usersLock and defer
-	usersLock.Lock()
-	defer usersLock.Unlock()
 	username = strings.ToLower(username)
 
 	// insert/update user
@@ -146,9 +137,6 @@ func NumUsers() int {
 }
 
 func DelUser(userId int) bool {
-	usersLock.Lock()
-	defer usersLock.Unlock()
-
 	user := &Users{UserId: userId}
 	err := SESSION.Select(user)
 	if err == nil {
