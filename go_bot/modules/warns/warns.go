@@ -116,7 +116,7 @@ func button(bot ext.Bot, u *gotgbot.Update) error {
 	return nil
 }
 
-func resetWarns(bot ext.Bot, u *gotgbot.Update, args []string) error {
+func resetWarns(_ ext.Bot, u *gotgbot.Update, args []string) error {
 	message := u.EffectiveMessage
 	chat := u.EffectiveChat
 	userId := extraction.ExtractUser(message, args)
@@ -131,9 +131,42 @@ func resetWarns(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	}
 }
 
+func warns(_ ext.Bot, u *gotgbot.Update, args []string) error {
+	message := u.EffectiveMessage
+	chat := u.EffectiveChat
+	userId := extraction.ExtractUser(message, args)
+	numWarns, reasons := sql.GetWarns(strconv.Itoa(userId), strconv.Itoa(chat.Id))
+	text := ""
+
+	if numWarns != 0 {
+		limit, _ := sql.GetWarnSetting(strconv.Itoa(chat.Id))
+		if reasons != nil {
+			text = fmt.Sprintf("This user has %v/%v warnings, for the following reasons:", numWarns, limit)
+			for _, reason := range reasons {
+				text += fmt.Sprintf("\n - %v", reason)
+			}
+			msgs := helpers.SplitMessage(text)
+			for _, msg := range msgs {
+				_, err := u.EffectiveMessage.ReplyText(msg)
+				if err != nil {
+					return err
+				}
+			}
+		} else {
+			_, err := u.EffectiveMessage.ReplyText(fmt.Sprintf("User has %v/%v warnings, but no reasons for any of them.", numWarns, limit))
+			return err
+		}
+	} else {
+		_, err := u.EffectiveMessage.ReplyText("This user hasn't got any warnings!")
+		return err
+	}
+	return nil
+}
+
 func LoadWarns(u *gotgbot.Updater) {
-	defer log.Println("Loadin module warns")
+	defer log.Println("Loading module warns")
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("warn", warnUser))
 	u.Dispatcher.AddHandler(handlers.NewCallback("rmWarn", button))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("resetwarns", resetWarns))
+	u.Dispatcher.AddHandler(handlers.NewArgsCommand("warns", warns))
 }
