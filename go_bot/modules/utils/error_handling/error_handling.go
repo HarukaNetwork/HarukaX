@@ -6,7 +6,7 @@ import (
 
 type CommandCallback func()
 
-func HandleErrorGracefully(err error) {
+func HandleErr(err error) {
 	if err != nil {
 		log.Println("Error: ", err)
 	}

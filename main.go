@@ -30,13 +30,13 @@ func main() {
 	u.Dispatcher.AddHandler(handlers.NewCommand("start", start))
 
 	err = u.StartPolling()
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	u.Idle()
 }
 
 func start(_ ext.Bot, u *gotgbot.Update) error {
 	msg := u.EffectiveMessage
 	_, err := msg.ReplyText("Hewwo, chu started me desu~")
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	return nil
 }

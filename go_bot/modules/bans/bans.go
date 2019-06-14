@@ -29,7 +29,7 @@ func ban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	userId, _ := extraction.ExtractUserAndText(message, args)
 	if userId == 0 {
 		_, err := message.ReplyText("Try targeting a user next time bud.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
@@ -37,19 +37,19 @@ func ban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	if err != nil {
 		if err.Error() == "User not found" {
 			_, err := message.ReplyText("This user is ded mate.")
-			error_handling.HandleErrorGracefully(err)
+			error_handling.HandleErr(err)
 			return nil
 		}
 	}
 	if chat_status.IsUserBanProtected(chat, userId, member) {
 		_, err := message.ReplyText("One day I'll find out how to work around the bot API. Today is not that day.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
 	if userId == bot.Id {
 		_, err := message.ReplyText("No u")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
@@ -59,7 +59,7 @@ func ban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		return nil
 	}
 	_, err = message.ReplyText("Banned!")
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	return nil
 }
 
@@ -79,7 +79,7 @@ func tempBan(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	userId, reason := extraction.ExtractUserAndText(message, args)
 	if userId == 0 {
 		_, err := message.ReplyText("Try targeting a user next time bud.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
@@ -87,25 +87,25 @@ func tempBan(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	if err != nil {
 		if err.Error() == "User not found" {
 			_, err := message.ReplyText("This user is ded mate.")
-			error_handling.HandleErrorGracefully(err)
+			error_handling.HandleErr(err)
 			return nil
 		}
 	}
 	if chat_status.IsUserBanProtected(chat, userId, member) {
 		_, err := message.ReplyText("One day I'll find out how to work around the bot API. Today is not that day.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
 	if userId == bot.Id {
 		_, err := message.ReplyText("No u")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
 	if reason == "" {
 		_, err := message.ReplyText("I don't know how long I'm supposed to ban them for 🤔.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
@@ -121,10 +121,10 @@ func tempBan(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	_, err = newMsg.Send()
 	if err != nil {
 		_, err := message.ReplyText("Press F, I can't seem to ban this user.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 	}
 	_, err = message.ReplyText(fmt.Sprintf("Banned for %s!", timeVal))
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	return nil
 }
 
@@ -144,7 +144,7 @@ func kick(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	userId, _ := extraction.ExtractUserAndText(message, args)
 	if userId == 0 {
 		_, err := message.ReplyText("Try targeting a user next time bud.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
@@ -152,19 +152,19 @@ func kick(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	if err != nil {
 		if err.Error() == "User not found" {
 			_, err := message.ReplyText("This user is ded mate.")
-			error_handling.HandleErrorGracefully(err)
+			error_handling.HandleErr(err)
 			return nil
 		}
 	}
 	if chat_status.IsUserBanProtected(chat, userId, member) {
 		_, err := message.ReplyText("One day I'll find out how to work around the bot API. Today is not that day.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
 	if userId == bot.Id {
 		_, err := message.ReplyText("No u")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
@@ -172,11 +172,11 @@ func kick(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	if err != nil || !bb {
 		log.Println(err, bb)
 		_, err = message.ReplyText("Hec, I can't seem to kick this user.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 	_, err = message.ReplyText("Kicked!")
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	return nil
 }
 
@@ -192,17 +192,17 @@ func kickme(_ ext.Bot, u *gotgbot.Update) error {
 
 	if chat_status.IsUserAdmin(chat, user.Id, nil) {
 		_, err := message.ReplyText("Admin sir pls ;_;")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 	bb, _ := chat.UnbanMember(user.Id)
 	if bb {
 		_, err := message.ReplyText("Sure thing boss.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	} else {
 		_, err := message.ReplyText("OwO I can't :/")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 }
@@ -222,33 +222,33 @@ func unban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 
 	if userId == 0 {
 		_, err := message.ReplyText("Try targeting a user next time bud.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
 	_, err := chat.GetMember(userId)
 	if err != nil {
 		_, err := message.ReplyText("This user is ded m8.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
 	if userId == bot.Id {
 		_, err := message.ReplyText("What exactly are you attempting to do?.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
 	if chat_status.IsUserInChat(chat, userId) {
 		_, err := message.ReplyText("This user is already in the group!")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
 	_, err = chat.UnbanMember(userId)
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	_, err = message.ReplyText("Fine, I'll allow it, this time...")
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	return nil
 }
 

@@ -55,7 +55,7 @@ func ExtractUserAndText(m *ext.Message, args []string) (int, string) {
 		userId = users.GetUserId(user)
 		if userId == 0 {
 			_, err := m.ReplyText("I don't have that user in my db. You'll be able to interact with them if you reply to that person's message instead, or forward one of that user's messages.")
-			error_handling.HandleErrorGracefully(err)
+			error_handling.HandleErr(err)
 			return 0, ""
 		} else {
 			res := strings.SplitN(m.Text, " ", 3)
@@ -74,7 +74,7 @@ func ExtractUserAndText(m *ext.Message, args []string) (int, string) {
 		_, err := m.ReplyText("I don't seem to have interacted with this user before - please forward a message from " +
 		"them to give me control! (like a voodoo doll, I need a piece of them to be able " +
 		"to execute certain commands...)")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return 0, ""
 	}
 	return userId, text

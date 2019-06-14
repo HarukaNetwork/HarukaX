@@ -6,7 +6,6 @@ import (
 	"github.com/atechnohazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/go-pg/pg/orm"
 	"strings"
-	"sync"
 )
 
 type Users struct {
@@ -28,18 +27,11 @@ func (c Chats) String() string {
 }
 
 type ChatMembers struct {
-	PrivChatId int    `sql:",pk"`
-	Chat       string `pg:"fk:ChatId"`
-	User       int    `ph:"fk:UserId"`
+	Chat       string `sql:",pk" pg:"fk:ChatId"`
+	User       int    `sql:",pk" pg:"fk:UserId"`
 }
 
-// Insertion usersLock
-var usersLock sync.Mutex
-
 func EnsureBotInDb(u *gotgbot.Updater) {
-	// usersLock and defer unlock for thread safety
-	usersLock.Lock()
-	defer usersLock.Unlock()
 	models := []interface{}{&Users{}, &Chats{}, &ChatMembers{}}
 	for _, model := range models {
 		_ = SESSION.CreateTable(model, &orm.CreateTableOptions{FKConstraints: true})
@@ -47,51 +39,30 @@ func EnsureBotInDb(u *gotgbot.Updater) {
 
 	// Insert bot user only if it doesn't exist already
 	botUser := &Users{UserId: u.Dispatcher.Bot.Id, UserName: u.Dispatcher.Bot.UserName}
-	err := SESSION.Select(botUser)
-	if err != nil {
-		er := SESSION.Insert(botUser)
-		error_handling.HandleErrorGracefully(er)
-	}
+	_, err := SESSION.Model(botUser).OnConflict("(user_id) DO UPDATE").Set("user_name = EXCLUDED.user_name").Insert()
+	error_handling.HandleErr(err)
 }
 
 func UpdateUser(userId int, username string, chatId string, chatName string) {
-	// usersLock and defer
-	usersLock.Lock()
-	defer usersLock.Unlock()
 	username = strings.ToLower(username)
 
-	// insert/update user
+	// upsert user
 	user := &Users{UserName: username, UserId: userId}
-	err := SESSION.Select(user)
-	if err != nil {
-		err := SESSION.Insert(user)
-		error_handling.HandleErrorGracefully(err)
-	} else {
-		user.UserName = username
-	}
+	_, err := SESSION.Model(user).OnConflict("(user_id) DO UPDATE").Set("user_name = EXCLUDED.user_name").Insert()
+	error_handling.HandleErr(err)
 
 	if chatId == "nil" || chatName == "nil" {
 		return
 	}
 
-	chat := &Chats{ChatId: string(chatId)}
-	err = SESSION.Select(chat)
-	if err != nil {
-		chat.ChatName = chatName
-		err := SESSION.Insert(chat)
-		error_handling.HandleErrorGracefully(err)
-	} else {
-		chat.ChatName = chatName
-	}
+	// upsert chat
+	chat := &Chats{ChatId: string(chatId), ChatName: chatName}
+	_, err = SESSION.Model(chat).OnConflict("(chat_id) DO UPDATE").Set("chat_name = EXCLUDED.chat_name").Insert()
+	error_handling.HandleErr(err)
 
+	// upsert chat_member
 	member := &ChatMembers{Chat: chat.ChatId, User: user.UserId}
-	err = SESSION.Select(member)
-	if err != nil {
-		if (member.Chat[0] == '-') || (chatName == "nil" && chatId == "nil") {
-			err := SESSION.Insert(member)
-			error_handling.HandleErrorGracefully(err)
-		}
-	}
+	_ = SESSION.Insert(member)
 }
 
 func GetUserIdByName(username string) *Users {
@@ -116,46 +87,44 @@ func GetNameByUserId(userId int) *Users {
 func GetChatMembers(chatId string) []ChatMembers {
 	var chatMembers []ChatMembers
 	err := SESSION.Model(&chatMembers).Where("Chat_Members.chat = ?", chatId).Select()
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	return chatMembers
 }
 
 func GetAllChats() []Chats {
 	var chats []Chats
 	err := SESSION.Model(&chats).Select()
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	return chats
 }
 
 func GetUserNumChats(userId int) int {
 	count, err := SESSION.Model(new(ChatMembers)).Where("chat_members.user = ?", userId).SelectAndCount()
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	return count
 }
 
 func NumChats() int {
 	count, err := SESSION.Model(new(Chats)).SelectAndCount()
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	return count
 }
 
 func NumUsers() int {
 	count, err := SESSION.Model(new(Users)).SelectAndCount()
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	return count
 }
 
 func DelUser(userId int) bool {
-	usersLock.Lock()
-	defer usersLock.Unlock()
-
 	user := &Users{UserId: userId}
 	err := SESSION.Select(user)
 	if err == nil {
 		err := SESSION.Delete(user)
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
+		err = SESSION.Delete(&ChatMembers{User: userId})
+		error_handling.HandleErr(err)
 		return true
 	}
-	err = SESSION.Delete(&ChatMembers{User: userId})
 	return false
 }

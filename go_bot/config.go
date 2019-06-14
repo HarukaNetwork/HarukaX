@@ -17,6 +17,7 @@ type Config struct {
 	SudoUsers []string
 	LoadPlugins []string
 	SqlUri string
+	Heroku bool
 }
 
 var BotConfig Config
@@ -56,6 +57,9 @@ func init() {
 	if !ok {
 		log.Fatal("Missing PostgreSQL URI")
 	}
+
+	_, returnConfig.Heroku = os.LookupEnv("HEROKU")
+
 
 	BotConfig = returnConfig
 

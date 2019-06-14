@@ -9,7 +9,7 @@ import (
 
 func CanDelete(chat *ext.Chat, botId int) bool {
 	k, err := chat.GetMember(botId)
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	return k.CanDeleteMessages
 }
 
@@ -19,7 +19,7 @@ func IsUserBanProtected(chat *ext.Chat, userId int, member *ext.ChatMember) bool
 	}
 	if member == nil {
 		mem, err := chat.GetMember(userId)
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		member = mem
 	}
 	if member.Status == "administrator" || member.Status == "creator" {
@@ -35,7 +35,7 @@ func IsUserAdmin(chat *ext.Chat, userId int, member *ext.ChatMember) bool {
 	}
 	if member == nil {
 		mem, err := chat.GetMember(userId)
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		member = mem
 	}
 	if member.Status == "administrator" || member.Status == "creator" {
@@ -51,7 +51,7 @@ func IsBotAdmin(chat *ext.Chat, member *ext.ChatMember) bool {
 	}
 	if member == nil {
 		mem, err := chat.GetMember(chat.Bot.Id)
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		member = mem
 	}
 	if member.Status == "administrator" || member.Status == "creator" {
@@ -64,7 +64,7 @@ func IsBotAdmin(chat *ext.Chat, member *ext.ChatMember) bool {
 func RequireBotAdmin(chat *ext.Chat) bool {
 	if !IsBotAdmin(chat, nil) {
 		_, err := chat.Bot.SendMessage(chat.Id, "I'm not admin!")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return false
 	}
 	return true
@@ -73,7 +73,7 @@ func RequireBotAdmin(chat *ext.Chat) bool {
 func RequireUserAdmin(chat *ext.Chat, userId int, member *ext.ChatMember) bool {
 	if !IsUserAdmin(chat, userId, member) {
 		_, err := chat.Bot.SendMessage(chat.Id, "You must be an admin to perform this action.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return false
 	}
 	return true
@@ -81,7 +81,7 @@ func RequireUserAdmin(chat *ext.Chat, userId int, member *ext.ChatMember) bool {
 
 func IsUserInChat(chat *ext.Chat, userId int) bool {
 	member, err := chat.GetMember(userId)
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	if member.Status == "left" || member.Status == "kicked" {
 		return false
 	} else {
@@ -91,10 +91,10 @@ func IsUserInChat(chat *ext.Chat, userId int) bool {
 
 func CanPromote(bot ext.Bot, chat *ext.Chat) bool {
 	botChatMember, err := chat.GetMember(bot.Id)
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	if !botChatMember.CanPromoteMembers {
 		_, err := bot.SendMessage(chat.Id, "I can't promote/demote people here! Make sure I'm admin and can appoint new admins.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return false
 	}
 	return true
@@ -102,10 +102,10 @@ func CanPromote(bot ext.Bot, chat *ext.Chat) bool {
 
 func CanPin(bot ext.Bot, chat *ext.Chat) bool {
 	botChatMember, err := chat.GetMember(bot.Id)
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	if !botChatMember.CanPinMessages {
 		_, err := bot.SendMessage(chat.Id, "I can't pin messages here! Make sure I'm admin and can pin messages.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return false
 	}
 	return true
@@ -113,10 +113,10 @@ func CanPin(bot ext.Bot, chat *ext.Chat) bool {
 
 func CanRestrict(bot ext.Bot, chat *ext.Chat) bool {
 	botChatMember, err := chat.GetMember(bot.Id)
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	if !botChatMember.CanRestrictMembers{
 		_, err := bot.SendMessage(chat.Id, "I can't restrict people here! Make sure I'm admin and can appoint new admins.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return false
 	}
 	return true

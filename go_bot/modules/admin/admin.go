@@ -35,27 +35,27 @@ func promote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	userId := extraction.ExtractUser(message, args)
 	if userId == 0 {
 		_, err := message.ReplyText("This user is ded mate.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
 	userMember, err := chat.GetMember(userId)
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 
 	if userMember.Status == "administrator" || userMember.Status == "creator" {
 		_, err := message.ReplyText("Am I supposed to give them a second star or something?")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
 	if userId == bot.Id {
 		_, err := message.ReplyText("If only I could do this to myself ;_;")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
 	botMember, err := chat.GetMember(bot.Id)
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 
 	sendablePromoteChatMember := bot.NewSendablePromoteChatMember(chatId, userId)
 	sendablePromoteChatMember.CanDeleteMessages = botMember.CanDeleteMessages
@@ -68,10 +68,10 @@ func promote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	sendablePromoteChatMember.CanPromoteMembers = botMember.CanPromoteMembers
 
 	_, err = sendablePromoteChatMember.Send()
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 
 	_, err = message.ReplyText("Successfully promoted!")
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 
 	return nil
 }
@@ -95,28 +95,28 @@ func demote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	userId := extraction.ExtractUser(message, args)
 	if userId == 0 {
 		_, err := message.ReplyText("This user is ded mate.")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
 	userMember, err := chat.GetMember(userId)
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 
 	if !(userMember.Status == "administrator") {
 		_, err := message.ReplyText("Can't demote what wasn't promoted!")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
 	if userMember.Status == "creator" {
 		_, err := message.ReplyText("This person CREATED the chat, how would I demote them?")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
 	if userId == bot.Id {
 		_, err := message.ReplyText("Pls no sir ;_;")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
@@ -124,12 +124,12 @@ func demote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	if err != nil || !bb {
 		log.Println(err)
 		_, err := message.ReplyText("Could not demote. I might not be admin, or the admin status was appointed by another user, so I can't act upon them!")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 
 	_, err = message.ReplyText("Successfully demoted!")
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 
 
 	return nil
@@ -209,32 +209,32 @@ func invitelink(bot ext.Bot, u *gotgbot.Update) error {
 
 	if chat.Username != "" {
 		_, err := message.ReplyText(chat.Username)
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	} else if chat.Type == "supergroup" || chat.Type == "channel" {
 		botMember, err := chat.GetMember(bot.Id)
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		if botMember.CanInviteUsers {
 			inviteLink, err := bot.ExportChatInviteLink(chat.Id)
-			error_handling.HandleErrorGracefully(err)
+			error_handling.HandleErr(err)
 			_, err = message.ReplyText(inviteLink)
-			error_handling.HandleErrorGracefully(err)
+			error_handling.HandleErr(err)
 			return nil
 		} else {
 			_, err := message.ReplyText("I don't have access to the invite link, try changing my permissions!")
-			error_handling.HandleErrorGracefully(err)
+			error_handling.HandleErr(err)
 			return nil
 		}
 	} else {
 		_, err := message.ReplyText("I can only give you invite links for supergroups and channels, sorry!")
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return nil
 	}
 }
 
 func adminlist(bot ext.Bot, u *gotgbot.Update) error {
 	admins, err := u.EffectiveChat.GetAdministrators()
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	var addendum string
 	if u.EffectiveChat.Title != "" {
 		addendum = u.EffectiveChat.Title
@@ -254,7 +254,7 @@ func adminlist(bot ext.Bot, u *gotgbot.Update) error {
 	msg.ParseMode = parsemode.Html
 	msg.ReplyToMessageId = u.EffectiveMessage.MessageId
 	_, err = msg.Send()
-	error_handling.HandleErrorGracefully(err)
+	error_handling.HandleErr(err)
 	return nil
 }
 

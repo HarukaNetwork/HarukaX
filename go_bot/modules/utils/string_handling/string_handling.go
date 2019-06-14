@@ -18,7 +18,7 @@ func ExtractTime(m *ext.Message, timeVal string) int64 {
 		timeNum, err := strconv.Atoi(t)
 		if err != nil {
 			_, err := m.ReplyText("Invalid time amount specified.")
-			error_handling.HandleErrorGracefully(err)
+			error_handling.HandleErr(err)
 			return -1
 		}
 
@@ -34,7 +34,7 @@ func ExtractTime(m *ext.Message, timeVal string) int64 {
 		return banTime
 	} else {
 		_, err := m.ReplyText(fmt.Sprintf("Invalid time type specified. Expected m, h, or d got: %s", lastLetter))
-		error_handling.HandleErrorGracefully(err)
+		error_handling.HandleErr(err)
 		return -1
 	}
 }
