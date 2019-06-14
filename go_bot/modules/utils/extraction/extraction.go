@@ -84,3 +84,15 @@ func ExtractUser(message *ext.Message, args []string) int {
 	userId, _ := ExtractUserAndText(message, args)
 	return userId
 }
+
+func ExtractText(message *ext.Message) string {
+	if message.Text != "" {
+		return message.Text
+	} else if message.Caption != "" {
+		return message.Caption
+	} else if message.Sticker != nil {
+		return message.Sticker.Emoji
+	} else {
+		return ""
+	}
+}

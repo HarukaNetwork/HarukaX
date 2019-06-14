@@ -1,7 +1,7 @@
 package error_handling
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 type CommandCallback func()

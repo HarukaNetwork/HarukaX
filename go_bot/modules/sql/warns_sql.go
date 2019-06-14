@@ -117,9 +117,9 @@ func RemoveWarnFilter(chatId string, keyword string) bool {
 	return false
 }
 
-func GetChatWarnTriggers(chatId string) *WarnFilters {
-	warnFilters := &WarnFilters{ChatId: chatId}
-	err := SESSION.Select(warnFilters)
+func GetChatWarnTriggers(chatId string) []WarnFilters {
+	var warnFilters []WarnFilters = nil
+	err := SESSION.Model(&warnFilters).Where("chat_id = ?", chatId).Select()
 	if err != nil {
 		error_handling.HandleErr(err)
 		return nil
