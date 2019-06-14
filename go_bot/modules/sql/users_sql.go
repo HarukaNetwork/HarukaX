@@ -57,12 +57,15 @@ func UpdateUser(userId int, username string, chatId string, chatName string) {
 
 	// upsert chat
 	chat := &Chats{ChatId: string(chatId), ChatName: chatName}
+
 	_, err = SESSION.Model(chat).OnConflict("(chat_id) DO UPDATE").Set("chat_name = EXCLUDED.chat_name").Insert()
 	error_handling.HandleErr(err)
 
-	// upsert chat_member
-	member := &ChatMembers{Chat: chat.ChatId, User: user.UserId}
-	_ = SESSION.Insert(member)
+	if  chat.ChatId[0] == '-'{
+		// upsert chat_member
+		member := &ChatMembers{Chat: chat.ChatId, User: user.UserId}
+		_ = SESSION.Insert(member)
+	}
 }
 
 func GetUserIdByName(username string) *Users {
