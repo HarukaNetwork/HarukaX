@@ -22,13 +22,13 @@ func promote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	user := u.EffectiveUser
 
 	if !chat_status.RequireBotAdmin(chat) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 	if !chat_status.CanPromote(bot, chat) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 
 	userId := extraction.ExtractUser(message, args)
@@ -70,9 +70,8 @@ func promote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	error_handling.HandleErr(err)
 
 	_, err = message.ReplyText("Successfully promoted!")
-	error_handling.HandleErr(err)
 
-	return nil
+	return err
 }
 
 func demote(bot ext.Bot, u *gotgbot.Update, args []string) error {
@@ -82,20 +81,19 @@ func demote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	user := u.EffectiveUser
 
 	if !chat_status.RequireBotAdmin(chat) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 	if !chat_status.CanPromote(bot, chat) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 
 	userId := extraction.ExtractUser(message, args)
 	if userId == 0 {
 		_, err := message.ReplyText("This user is ded mate.")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
 	userMember, err := chat.GetMember(userId)
@@ -103,35 +101,28 @@ func demote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 
 	if !(userMember.Status == "administrator") {
 		_, err := message.ReplyText("Can't demote what wasn't promoted!")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
 	if userMember.Status == "creator" {
 		_, err := message.ReplyText("This person CREATED the chat, how would I demote them?")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
 	if userId == bot.Id {
 		_, err := message.ReplyText("Pls no sir ;_;")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
 	bb, err := bot.DemoteChatMember(chatId, userId)
 	if err != nil || !bb {
 		log.Println(err)
 		_, err := message.ReplyText("Could not demote. I might not be admin, or the admin status was appointed by another user, so I can't act upon them!")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
 	_, err = message.ReplyText("Successfully demoted!")
-	error_handling.HandleErr(err)
-
-
-	return nil
+	return err
 }
 
 func pin(bot ext.Bot, u *gotgbot.Update, args []string) error {
@@ -140,13 +131,13 @@ func pin(bot ext.Bot, u *gotgbot.Update, args []string) error {
 
 	// Check permissions
 	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 	if !chat_status.RequireBotAdmin(chat) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 	if !chat_status.CanPin(bot, chat) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 
 	isGroup := chat.Type != "private" && chat.Type != "channel"
@@ -160,11 +151,8 @@ func pin(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	if prevMessage != nil && isGroup {
 		sendable := bot.NewSendablePinChatMessage(chat.Id, prevMessage.MessageId)
 		sendable.DisableNotification = isSilent
-		bb, err := sendable.Send()
-		if err != nil || !bb {
-			log.Println(err, bb)
-			return nil
-		}
+		_, err := sendable.Send()
+		return err
 	}
 	return nil
 }
@@ -175,22 +163,17 @@ func unpin(bot ext.Bot, u *gotgbot.Update) error {
 
 	// Check permissions
 	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 	if !chat_status.RequireBotAdmin(chat) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 	if !chat_status.CanPin(bot, chat) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 
 	_, err := bot.UnpinChatMessage(chat.Id)
-	if err != nil {
-		if !(err.Error() == "Bad Request: CHAT_NOT_MODIFIED"){
-			return err
-		}
-	}
-	return nil
+	return err
 }
 
 func invitelink(bot ext.Bot, u *gotgbot.Update) error {
@@ -200,10 +183,10 @@ func invitelink(bot ext.Bot, u *gotgbot.Update) error {
 
 	// Check permissions
 	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 	if !chat_status.RequireBotAdmin(chat) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 
 	if chat.Username != "" {
