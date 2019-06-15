@@ -5,6 +5,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot"
 	"github.com/PaulSonOfLars/gotgbot/ext"
 	"github.com/PaulSonOfLars/gotgbot/handlers"
+	"github.com/atechnohazard/ginko/go_bot"
 	"github.com/atechnohazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/atechnohazard/ginko/go_bot/modules/utils/extraction"
 	"github.com/atechnohazard/ginko/go_bot/modules/utils/helpers"
@@ -79,7 +80,19 @@ func info(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	if user.Username != "" {
 		text += fmt.Sprintf("\nUsername: @%v", user.Username)
 	}
+
 	text += fmt.Sprintf("\nPermanent user link: %v", helpers.MentionHtml(user.Id, user.FirstName + user.LastName))
+
+	if user.Id == go_bot.BotConfig.OwnerId {
+		text += "\n\nDis nibba stronk af!"
+	} else {
+		for _, id := range go_bot.BotConfig.SudoUsers {
+			if strconv.Itoa(user.Id) == id {
+				text += "\nThis person is one of my sudo users! " +
+				"Nearly as powerful as my owner - so watch it."
+			}
+		}
+	}
 	_, err := u.EffectiveMessage.ReplyHTML(text)
 	return err
 }
