@@ -5,7 +5,6 @@ import (
 	"github.com/PaulSonOfLars/gotgbot"
 	"github.com/PaulSonOfLars/gotgbot/ext"
 	"github.com/PaulSonOfLars/gotgbot/handlers"
-	"github.com/PaulSonOfLars/gotgbot/parsemode"
 	"github.com/atechnohazard/ginko/go_bot/modules/utils/chat_status"
 	"github.com/atechnohazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/atechnohazard/ginko/go_bot/modules/utils/extraction"
@@ -209,8 +208,7 @@ func invitelink(bot ext.Bot, u *gotgbot.Update) error {
 
 	if chat.Username != "" {
 		_, err := message.ReplyText(chat.Username)
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	} else if chat.Type == "supergroup" || chat.Type == "channel" {
 		botMember, err := chat.GetMember(bot.Id)
 		error_handling.HandleErr(err)
@@ -218,21 +216,18 @@ func invitelink(bot ext.Bot, u *gotgbot.Update) error {
 			inviteLink, err := bot.ExportChatInviteLink(chat.Id)
 			error_handling.HandleErr(err)
 			_, err = message.ReplyText(inviteLink)
-			error_handling.HandleErr(err)
-			return nil
+			return err
 		} else {
 			_, err := message.ReplyText("I don't have access to the invite link, try changing my permissions!")
-			error_handling.HandleErr(err)
-			return nil
+			return err
 		}
 	} else {
 		_, err := message.ReplyText("I can only give you invite links for supergroups and channels, sorry!")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 }
 
-func adminlist(bot ext.Bot, u *gotgbot.Update) error {
+func adminlist(_ ext.Bot, u *gotgbot.Update) error {
 	admins, err := u.EffectiveChat.GetAdministrators()
 	error_handling.HandleErr(err)
 	var addendum string
@@ -250,12 +245,8 @@ func adminlist(bot ext.Bot, u *gotgbot.Update) error {
 			text += fmt.Sprintf("\n - %s", name)
 		}
 	}
-	msg := bot.NewSendableMessage(u.EffectiveChat.Id, text)
-	msg.ParseMode = parsemode.Html
-	msg.ReplyToMessageId = u.EffectiveMessage.MessageId
-	_, err = msg.Send()
-	error_handling.HandleErr(err)
-	return nil
+	_, err = u.EffectiveMessage.ReplyHTML(text)
+	return err
 }
 
 func LoadAdmin(u *gotgbot.Updater) {

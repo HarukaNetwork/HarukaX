@@ -76,23 +76,32 @@ func warn(u *ext.User, c *ext.Chat, reason string, m *ext.Message) error {
 }
 
 func warnUser(_ ext.Bot, u *gotgbot.Update, args []string) error {
-	m := u.EffectiveMessage
-	c := u.EffectiveChat
+	message := u.EffectiveMessage
+	chat := u.EffectiveChat
+	user := u.EffectiveUser
 
-	userId, reason := extraction.ExtractUserAndText(m, args)
+	userId, reason := extraction.ExtractUserAndText(message, args)
+
+	// Check permissions
+	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+		return nil
+	}
+	if !chat_status.RequireBotAdmin(chat) {
+		return nil
+	}
 
 	if userId != 0 {
-		if m.ReplyToMessage != nil && m.ReplyToMessage.From.Id == userId {
-			return warn(m.ReplyToMessage.From, c, reason, m.ReplyToMessage)
+		if message.ReplyToMessage != nil && message.ReplyToMessage.From.Id == userId {
+			return warn(message.ReplyToMessage.From, chat, reason, message.ReplyToMessage)
 		} else {
-			chatMember, err := c.GetMember(userId)
+			chatMember, err := chat.GetMember(userId)
 			if err != nil {
 				return err
 			}
-			return warn(chatMember.User, c, reason, m)
+			return warn(chatMember.User, chat, reason, message)
 		}
 	} else {
-		_, err := m.ReplyText("No user was designated!")
+		_, err := message.ReplyText("No user was designated!")
 		return err
 	}
 }
@@ -100,7 +109,13 @@ func warnUser(_ ext.Bot, u *gotgbot.Update, args []string) error {
 func button(bot ext.Bot, u *gotgbot.Update) error {
 	query := u.CallbackQuery
 	user := u.EffectiveUser
+	chat := u.EffectiveChat
 	pattern, _ := regexp.Compile(`rmWarn\((.+?)\)`)
+
+	// Check permissions
+	if !chat_status.IsUserAdmin(chat, user.Id, nil) {
+		return nil
+	}
 
 	if pattern.MatchString(query.Data) {
 		userId := pattern.FindStringSubmatch(query.Data)[1]
@@ -122,7 +137,16 @@ func button(bot ext.Bot, u *gotgbot.Update) error {
 func resetWarns(_ ext.Bot, u *gotgbot.Update, args []string) error {
 	message := u.EffectiveMessage
 	chat := u.EffectiveChat
+	user := u.EffectiveUser
 	userId := extraction.ExtractUser(message, args)
+
+	// Check permissions
+	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+		return nil
+	}
+	if !chat_status.RequireBotAdmin(chat) {
+		return nil
+	}
 
 	if userId != 0 {
 		sql.ResetWarns(strconv.Itoa(userId), strconv.Itoa(chat.Id))
@@ -169,8 +193,17 @@ func warns(_ ext.Bot, u *gotgbot.Update, args []string) error {
 func addWarnFilter(_ ext.Bot, u *gotgbot.Update) error {
 	chat := u.EffectiveChat
 	msg := u.EffectiveMessage
+	user := u.EffectiveUser
 	var keyword string
 	var content string
+
+	// Check permissions
+	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+		return nil
+	}
+	if !chat_status.RequireBotAdmin(chat) {
+		return nil
+	}
 
 	args := strings.SplitN(msg.Text, " ", 2)
 
@@ -195,7 +228,16 @@ func addWarnFilter(_ ext.Bot, u *gotgbot.Update) error {
 
 func removeWarnFilter(_ ext.Bot, u *gotgbot.Update) error {
 	chat := u.EffectiveChat
+	user := u.EffectiveUser
 	msg := u.EffectiveMessage
+
+	// Check permissions
+	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+		return nil
+	}
+	if !chat_status.RequireBotAdmin(chat) {
+		return nil
+	}
 
 	args := strings.SplitN(msg.Text, " ", 2)
 
@@ -228,9 +270,6 @@ func removeWarnFilter(_ ext.Bot, u *gotgbot.Update) error {
 	}
 	_, err := msg.ReplyText("That's not a current warning filter - run /warnlist for all active warning filters.")
 	return err
-
-
-
 }
 
 func listWarnFilters(_ ext.Bot, u *gotgbot.Update) error {
@@ -263,6 +302,10 @@ func listWarnFilters(_ ext.Bot, u *gotgbot.Update) error {
 func replyFilter(_ ext.Bot, u *gotgbot.Update) error {
 	chat := u.EffectiveChat
 	message := u.EffectiveMessage
+
+	if !chat_status.RequireBotAdmin(chat) {
+		return nil
+	}
 
 	chatWarnFilters := sql.GetChatWarnTriggers(strconv.Itoa(chat.Id))
 	toMatch := extraction.ExtractText(message)
