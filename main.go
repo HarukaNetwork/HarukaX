@@ -7,6 +7,7 @@ import (
 	"github.com/atechnohazard/ginko/go_bot"
 	"github.com/atechnohazard/ginko/go_bot/modules/admin"
 	"github.com/atechnohazard/ginko/go_bot/modules/bans"
+	"github.com/atechnohazard/ginko/go_bot/modules/misc"
 	"github.com/atechnohazard/ginko/go_bot/modules/sql"
 	"github.com/atechnohazard/ginko/go_bot/modules/users"
 	"github.com/atechnohazard/ginko/go_bot/modules/utils/error_handling"
@@ -24,6 +25,7 @@ func main() {
 	users.LoadUsers(u)
 	admin.LoadAdmin(u)
 	warns.LoadWarns(u)
+	misc.LoadMisc(u)
 
 	sql.EnsureBotInDb(u)
 
