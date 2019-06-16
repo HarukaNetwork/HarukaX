@@ -20,9 +20,14 @@ If you can't, or don't want to use a dotenv file, it is also possible to use env
 * `BOT_NAME` : The name of your bot, as it appears on telegram
 * `OWNER_USERNAME` : Your Telegram username, without the `@`
 * `OWNER_ID` : Your Telegram ID
+* `DATABASE_URI`: Self explanatory (postgres)
 * `SUDO_USERS`: A list of userIDs, separated by spaces, who should have sudo access to the bot
+* `HEROKU`: Setting this to **anything** will activate it. Use if you're using a heroku database
 
 **Note: As of now, all the above fields are required**
+
+## Database configuration
+If you haven't set a DATABASE_URI in the .env file, docker will set up a database for you. For this to work properly, you need to populate 2 env vars, `POSTGRES_USER` and `POSTGRES_PASSWORD`.
 
 ## Starting the bot
 Once you have docker installed, and created your dotenv file or populated the neccessary environment variables, you can start up your bot. All you need to do is execute two commands.
