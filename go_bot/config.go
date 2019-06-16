@@ -1,7 +1,7 @@
 package go_bot
 
 import (
-	"github.com/atechnohazard/ginko/go_bot/modules/utils/error_handling"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/joho/godotenv"
 	"log"
 	"os"

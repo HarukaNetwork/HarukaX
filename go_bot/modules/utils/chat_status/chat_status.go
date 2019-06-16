@@ -1,9 +1,9 @@
 package chat_status
 
 import (
+	"github.com/ATechnoHazard/ginko/go_bot"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/PaulSonOfLars/gotgbot/ext"
-	"github.com/atechnohazard/ginko/go_bot"
-	"github.com/atechnohazard/ginko/go_bot/modules/utils/error_handling"
 	"strconv"
 )
 

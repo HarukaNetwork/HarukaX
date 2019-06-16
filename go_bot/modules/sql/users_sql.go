@@ -2,8 +2,8 @@ package sql
 
 import (
 	"fmt"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/PaulSonOfLars/gotgbot"
-	"github.com/atechnohazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/go-pg/pg/orm"
 	"strings"
 )

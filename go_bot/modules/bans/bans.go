@@ -2,13 +2,13 @@ package bans
 
 import (
 	"fmt"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/chat_status"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/extraction"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/string_handling"
 	"github.com/PaulSonOfLars/gotgbot"
 	"github.com/PaulSonOfLars/gotgbot/ext"
 	"github.com/PaulSonOfLars/gotgbot/handlers"
-	"github.com/atechnohazard/ginko/go_bot/modules/utils/chat_status"
-	"github.com/atechnohazard/ginko/go_bot/modules/utils/error_handling"
-	"github.com/atechnohazard/ginko/go_bot/modules/utils/extraction"
-	"github.com/atechnohazard/ginko/go_bot/modules/utils/string_handling"
 	"log"
 	"strings"
 )
@@ -196,7 +196,6 @@ func unban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	if !chat_status.RequireBotAdmin(chat) && chat_status.RequireUserAdmin(chat, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
-
 
 	userId, _ := extraction.ExtractUserAndText(message, args)
 

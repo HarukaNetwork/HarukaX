@@ -1,17 +1,17 @@
 package main
 
 import (
+	"github.com/ATechnoHazard/ginko/go_bot"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/admin"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/bans"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/misc"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/users"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/warns"
 	"github.com/PaulSonOfLars/gotgbot"
 	"github.com/PaulSonOfLars/gotgbot/ext"
 	"github.com/PaulSonOfLars/gotgbot/handlers"
-	"github.com/atechnohazard/ginko/go_bot"
-	"github.com/atechnohazard/ginko/go_bot/modules/admin"
-	"github.com/atechnohazard/ginko/go_bot/modules/bans"
-	"github.com/atechnohazard/ginko/go_bot/modules/misc"
-	"github.com/atechnohazard/ginko/go_bot/modules/sql"
-	"github.com/atechnohazard/ginko/go_bot/modules/users"
-	"github.com/atechnohazard/ginko/go_bot/modules/utils/error_handling"
-	"github.com/atechnohazard/ginko/go_bot/modules/warns"
 	"log"
 )
 

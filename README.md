@@ -6,10 +6,8 @@ A modular group management bot, written with the sole purpose of being entirely 
 You can [find me on telegram](https://t.me/sphericalkat)! I'm usually online, so I can hopefully answer any questions you may have.
 
 ## Download source
-To download the source, it is recommended to use the command:
- `go get -u github.com/atechnohazard/ginko`.
-
-It is required that everything be lowercase in the URL.
+To download the source, get it like any other go project:
+ `go get -u github.com/ATechnoHazard/ginko`.
 
 ## Setting up the bot (Important! Please go through once):
 

@@ -2,13 +2,13 @@ package warns
 
 import (
 	"fmt"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/chat_status"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/extraction"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/helpers"
 	"github.com/PaulSonOfLars/gotgbot"
 	"github.com/PaulSonOfLars/gotgbot/ext"
-	"github.com/atechnohazard/ginko/go_bot/modules/sql"
-	"github.com/atechnohazard/ginko/go_bot/modules/utils/chat_status"
-	"github.com/atechnohazard/ginko/go_bot/modules/utils/error_handling"
-	"github.com/atechnohazard/ginko/go_bot/modules/utils/extraction"
-	"github.com/atechnohazard/ginko/go_bot/modules/utils/helpers"
 	"html"
 	"regexp"
 	"strconv"

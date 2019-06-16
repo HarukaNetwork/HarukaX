@@ -1,9 +1,9 @@
 package extraction
 
 import (
+	"github.com/ATechnoHazard/ginko/go_bot/modules/users"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/PaulSonOfLars/gotgbot/ext"
-	"github.com/atechnohazard/ginko/go_bot/modules/users"
-	"github.com/atechnohazard/ginko/go_bot/modules/utils/error_handling"
 	"strconv"
 	"strings"
 	"unicode"

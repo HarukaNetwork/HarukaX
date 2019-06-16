@@ -2,13 +2,13 @@ package misc
 
 import (
 	"fmt"
+	"github.com/ATechnoHazard/ginko/go_bot"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/extraction"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/helpers"
 	"github.com/PaulSonOfLars/gotgbot"
 	"github.com/PaulSonOfLars/gotgbot/ext"
 	"github.com/PaulSonOfLars/gotgbot/handlers"
-	"github.com/atechnohazard/ginko/go_bot"
-	"github.com/atechnohazard/ginko/go_bot/modules/utils/error_handling"
-	"github.com/atechnohazard/ginko/go_bot/modules/utils/extraction"
-	"github.com/atechnohazard/ginko/go_bot/modules/utils/helpers"
 	"html"
 	"log"
 	"strconv"
@@ -53,9 +53,9 @@ func info(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	if userId != 0 {
 		userChat, _ := bot.GetChat(userId)
 		user = &ext.User{
-			Id: userChat.Id,
+			Id:        userChat.Id,
 			FirstName: userChat.FirstName,
-			LastName: userChat.LastName,
+			LastName:  userChat.LastName,
 		}
 
 	} else if msg.ReplyToMessage == nil && len(args) <= 0 {
@@ -69,8 +69,8 @@ func info(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		return nil
 	}
 
-	text := fmt.Sprintf("<b>User info</b>" +
-		"\nID: <code>%v</code>" +
+	text := fmt.Sprintf("<b>User info</b>"+
+		"\nID: <code>%v</code>"+
 		"\nFirst Name: %v", userId, html.EscapeString(user.FirstName))
 
 	if user.LastName != "" {
@@ -81,7 +81,7 @@ func info(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		text += fmt.Sprintf("\nUsername: @%v", user.Username)
 	}
 
-	text += fmt.Sprintf("\nPermanent user link: %v", helpers.MentionHtml(user.Id, user.FirstName + user.LastName))
+	text += fmt.Sprintf("\nPermanent user link: %v", helpers.MentionHtml(user.Id, user.FirstName+user.LastName))
 
 	if user.Id == go_bot.BotConfig.OwnerId {
 		text += "\n\nDis nibba stronk af!"
@@ -89,7 +89,7 @@ func info(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		for _, id := range go_bot.BotConfig.SudoUsers {
 			if strconv.Itoa(user.Id) == id {
 				text += "\nThis person is one of my sudo users! " +
-				"Nearly as powerful as my owner - so watch it."
+					"Nearly as powerful as my owner - so watch it."
 			}
 		}
 	}
