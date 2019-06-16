@@ -5,6 +5,12 @@ A modular group management bot, written with the sole purpose of being entirely 
 
 You can [find me on telegram](https://t.me/sphericalkat)! I'm usually online, so I can hopefully answer any questions you may have.
 
+## Download source
+To download the source, it is recommended to use the command:
+ `go get -u github.com/atechnohazard/ginko`.
+
+It is required that everything be lowercase in the URL.
+
 ## Setting up the bot (Important! Please go through once):
 
 This project is entirely dockerized, so you don't have to go through the hassle of setting up dependencies. All you need is Docker, which you can [install here](https://docs.docker.com/install/).
