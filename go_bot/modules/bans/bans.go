@@ -20,47 +20,42 @@ func ban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 
 	// Permission checks
 	if !chat_status.RequireBotAdmin(chat) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 
 	userId, _ := extraction.ExtractUserAndText(message, args)
 	if userId == 0 {
 		_, err := message.ReplyText("Try targeting a user next time bud.")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
 	member, err := chat.GetMember(userId)
 	if err != nil {
 		if err.Error() == "User not found" {
 			_, err := message.ReplyText("This user is ded mate.")
-			error_handling.HandleErr(err)
-			return nil
+			return err
 		}
 	}
 	if chat_status.IsUserBanProtected(chat, userId, member) {
 		_, err := message.ReplyText("One day I'll find out how to work around the bot API. Today is not that day.")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
 	if userId == bot.Id {
 		_, err := message.ReplyText("No u")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
-	bb, err := chat.KickMember(userId)
-	if err != nil || !bb {
-		log.Println(err, bb)
-		return nil
+	_, err = chat.KickMember(userId)
+	if err != nil {
+		return err
 	}
+
 	_, err = message.ReplyText("Banned!")
-	error_handling.HandleErr(err)
-	return nil
+	return err
 }
 
 func tempBan(bot ext.Bot, u *gotgbot.Update, args []string) error {
@@ -70,43 +65,38 @@ func tempBan(bot ext.Bot, u *gotgbot.Update, args []string) error {
 
 	// Permission checks
 	if !chat_status.RequireBotAdmin(chat) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 
 	userId, reason := extraction.ExtractUserAndText(message, args)
 	if userId == 0 {
 		_, err := message.ReplyText("Try targeting a user next time bud.")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
 	member, err := chat.GetMember(userId)
 	if err != nil {
 		if err.Error() == "User not found" {
 			_, err := message.ReplyText("This user is ded mate.")
-			error_handling.HandleErr(err)
-			return nil
+			return err
 		}
 	}
 	if chat_status.IsUserBanProtected(chat, userId, member) {
 		_, err := message.ReplyText("One day I'll find out how to work around the bot API. Today is not that day.")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
 	if userId == bot.Id {
 		_, err := message.ReplyText("No u")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
 	if reason == "" {
 		_, err := message.ReplyText("I don't know how long I'm supposed to ban them for 🤔.")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
 	splitReason := strings.SplitN(reason, " ", 2)
@@ -124,8 +114,7 @@ func tempBan(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		error_handling.HandleErr(err)
 	}
 	_, err = message.ReplyText(fmt.Sprintf("Banned for %s!", timeVal))
-	error_handling.HandleErr(err)
-	return nil
+	return err
 }
 
 func kick(bot ext.Bot, u *gotgbot.Update, args []string) error {
@@ -135,49 +124,42 @@ func kick(bot ext.Bot, u *gotgbot.Update, args []string) error {
 
 	// Permission checks
 	if !chat_status.RequireBotAdmin(chat) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 
 	userId, _ := extraction.ExtractUserAndText(message, args)
 	if userId == 0 {
 		_, err := message.ReplyText("Try targeting a user next time bud.")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
 	var member, err = chat.GetMember(userId)
 	if err != nil {
 		if err.Error() == "User not found" {
 			_, err := message.ReplyText("This user is ded mate.")
-			error_handling.HandleErr(err)
-			return nil
+			return err
 		}
 	}
 	if chat_status.IsUserBanProtected(chat, userId, member) {
 		_, err := message.ReplyText("One day I'll find out how to work around the bot API. Today is not that day.")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
 	if userId == bot.Id {
 		_, err := message.ReplyText("No u")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
-	bb, err := chat.UnbanMember(userId) // Apparently unban on current user = kick
-	if err != nil || !bb {
-		log.Println(err, bb)
+	_, err = chat.UnbanMember(userId) // Apparently unban on current user = kick
+	if err != nil {
 		_, err = message.ReplyText("Hec, I can't seem to kick this user.")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 	_, err = message.ReplyText("Kicked!")
-	error_handling.HandleErr(err)
-	return nil
+	return err
 }
 
 func kickme(_ ext.Bot, u *gotgbot.Update) error {
@@ -187,23 +169,21 @@ func kickme(_ ext.Bot, u *gotgbot.Update) error {
 
 	// Permission checks
 	if !chat_status.RequireBotAdmin(chat) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 
 	if chat_status.IsUserAdmin(chat, user.Id, nil) {
 		_, err := message.ReplyText("Admin sir pls ;_;")
 		error_handling.HandleErr(err)
-		return nil
+		return gotgbot.EndGroups{}
 	}
 	bb, _ := chat.UnbanMember(user.Id)
 	if bb {
 		_, err := message.ReplyText("Sure thing boss.")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	} else {
 		_, err := message.ReplyText("OwO I can't :/")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 }
 
@@ -214,7 +194,7 @@ func unban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 
 	// Permission checks
 	if !chat_status.RequireBotAdmin(chat) && chat_status.RequireUserAdmin(chat, user.Id, nil) {
-		return nil
+		return gotgbot.EndGroups{}
 	}
 
 
@@ -222,37 +202,30 @@ func unban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 
 	if userId == 0 {
 		_, err := message.ReplyText("Try targeting a user next time bud.")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
 	_, err := chat.GetMember(userId)
 	if err != nil {
 		_, err := message.ReplyText("This user is ded m8.")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
 	if userId == bot.Id {
 		_, err := message.ReplyText("What exactly are you attempting to do?.")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
 	if chat_status.IsUserInChat(chat, userId) {
 		_, err := message.ReplyText("This user is already in the group!")
-		error_handling.HandleErr(err)
-		return nil
+		return err
 	}
 
 	_, err = chat.UnbanMember(userId)
 	error_handling.HandleErr(err)
 	_, err = message.ReplyText("Fine, I'll allow it, this time...")
-	error_handling.HandleErr(err)
-	return nil
+	return err
 }
-
-
 
 func LoadBans(u *gotgbot.Updater) {
 	defer log.Println("Loading module bans")
