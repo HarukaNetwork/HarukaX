@@ -6,6 +6,7 @@ import (
 	"github.com/atechnohazard/ginko/go_bot/modules/utils/error_handling"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 func IdFromReply(m *ext.Message) (int, string) {
@@ -46,7 +47,7 @@ func ExtractUserAndText(m *ext.Message, args []string) (int, string) {
 		ent = nil
 	}
 
-	if entities != nil && ent != nil && ent.Offset == (len(m.Text) - len(textToParse)) {
+	if entities != nil && ent != nil && ent.Offset == (len(m.Text)-len(textToParse)) {
 		ent = &entities[0]
 		userId = ent.User.Id
 		text = strconv.Itoa(int(m.Text[ent.Offset+ent.Length]))
@@ -63,6 +64,23 @@ func ExtractUserAndText(m *ext.Message, args []string) (int, string) {
 				text = res[2]
 			}
 		}
+	} else if len(args) >= 1 {
+		isId := true
+		for _, arg := range args[0] {
+			if unicode.IsDigit(arg) {
+				continue
+			} else {
+				isId = false
+				break
+			}
+		}
+		if isId {
+			userId, _ = strconv.Atoi(args[0])
+			res := strings.SplitN(m.Text, " ", 3)
+			if len(res) >= 3 {
+				text = res[2]
+			}
+		}
 	} else if prevMessage != nil {
 		userId, text = IdFromReply(m)
 	} else {
@@ -72,8 +90,8 @@ func ExtractUserAndText(m *ext.Message, args []string) (int, string) {
 	_, err := m.Bot.GetChat(userId)
 	if err != nil {
 		_, err := m.ReplyText("I don't seem to have interacted with this user before - please forward a message from " +
-		"them to give me control! (like a voodoo doll, I need a piece of them to be able " +
-		"to execute certain commands...)")
+			"them to give me control! (like a voodoo doll, I need a piece of them to be able " +
+			"to execute certain commands...)")
 		error_handling.HandleErr(err)
 		return 0, ""
 	}
