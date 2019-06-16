@@ -1,25 +1,18 @@
 # Ginko
-Telegram bot written in Go. Currently WIP. Contributions are welcome.
+Telegram bot written in Go. Currently in alpha. Contributions are welcome.
 
-A modular group management bot, written with the sole purpose of being entirely in Go, for the concurrency and speed that it offers.
+A modular group management bot, written with the purpose of being highly concurrent.
 
-You can [find me on telegram](https://t.me/sphericalkat)! I'm usually online, so I can hopefully answer any questions you may have.
+You can [find us on telegram](https://t.me/gobotsupport)! I'm usually online, so I can hopefully answer any questions you may have.
 
-## Download source
-To download the source, get it like any other go project:
- `go get -u github.com/ATechnoHazard/ginko`.
+
 
 ## Setting up the bot (Important! Please go through once):
 
-This project is entirely dockerized, so you don't have to go through the hassle of setting up dependencies. All you need is Docker, which you can [install here](https://docs.docker.com/install/).
-
 ### Configuration
-There are two possible ways of configuring your bot. Through environment variables, or a dotenv file. 
+The preferred method is to create a dotenv file named `.env`, as it makes it much easier to see all your configuration settings grouped together. A sample dotenv file called `sample.env` has been included for convenience.
 
-The preferred method is to create a dotenv file named `.env`, as it makes it much easier to see all your configuration settings grouped together. A sample dotenv file called `.sample_env` has been included for convenience.
-
-If you can't, or don't want to use a dotenv file, it is also possible to use environment variables. The following environment variables are supported:
-
+The available fields for the .env file are as follows:
 * `BOT_API_KEY` :  Your bot token, as a string
 * `BOT_NAME` : The name of your bot, as it appears on telegram
 * `OWNER_USERNAME` : Your Telegram username, without the `@`
@@ -28,32 +21,13 @@ If you can't, or don't want to use a dotenv file, it is also possible to use env
 * `SUDO_USERS`: A list of userIDs, separated by spaces, who should have sudo access to the bot
 * `HEROKU`: Setting this to **anything** will activate it. Use if you're using a heroku database
 
-**Note: As of now, all the above fields are required**
-
-## Database configuration
-If you haven't set a DATABASE_URI in the .env file, docker will set up a database for you. For this to work properly, you need to populate 2 env vars, `POSTGRES_USER` and `POSTGRES_PASSWORD`.
 
 ## Starting the bot
-Once you have docker installed, and created your dotenv file or populated the neccessary environment variables, you can start up your bot. All you need to do is execute two commands.
+Download the latest binary for your machine's OS and architecture from the releases page. Put it in the same directory as the .env file, and execute it.
 
-Run: 
-```
-docker-compose build
-```
-to make sure any updates to the bot are reflected in the image.
+It's that simple.
 
-And then run,
-```
-docker-compose up
-```
-to start your bot.
-
-Alternatively, you may use 
-```
-docker-compose up -d
-```
-to run the bot in the background.
-
-
-
-
+## Download source
+Contributions to this project are welcome.
+To download the source, get it like any other Go project:
+ `go get -u github.com/ATechnoHazard/ginko`.
