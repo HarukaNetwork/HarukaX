@@ -45,7 +45,7 @@ func addWarnFilter(_ ext.Bot, u *gotgbot.Update) error {
 		return nil
 	}
 
-	sql.AddWarnFilter(strconv.Itoa(chat.Id), keyword, content)
+	go sql.AddWarnFilter(strconv.Itoa(chat.Id), keyword, content)
 	_, err := msg.ReplyText(fmt.Sprintf("Warn handler added for '%v'!", keyword))
 	error_handling.HandleErr(err)
 	return gotgbot.EndGroups{}
@@ -87,7 +87,7 @@ func removeWarnFilter(_ ext.Bot, u *gotgbot.Update) error {
 
 	for _, filt := range chatFilters {
 		if filt.Keyword == toRemove {
-			sql.RemoveWarnFilter(strconv.Itoa(chat.Id), toRemove)
+			go sql.RemoveWarnFilter(strconv.Itoa(chat.Id), toRemove)
 			_, err := msg.ReplyText("Yep, I'll stop warning people for that.")
 			error_handling.HandleErr(err)
 			return gotgbot.EndGroups{}

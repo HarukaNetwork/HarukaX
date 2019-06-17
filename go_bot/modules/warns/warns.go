@@ -31,7 +31,7 @@ func warn(u *ext.User, c *ext.Chat, reason string, m *ext.Message) error {
 
 	var keyboard ext.InlineKeyboardMarkup
 	if numWarns >= limit {
-		sql.ResetWarns(strconv.Itoa(u.Id), strconv.Itoa(c.Id))
+		go sql.ResetWarns(strconv.Itoa(u.Id), strconv.Itoa(c.Id))
 
 		if softWarn {
 			_, err = c.UnbanMember(u.Id)
@@ -150,7 +150,7 @@ func resetWarns(_ ext.Bot, u *gotgbot.Update, args []string) error {
 	}
 
 	if userId != 0 {
-		sql.ResetWarns(strconv.Itoa(userId), strconv.Itoa(chat.Id))
+		go sql.ResetWarns(strconv.Itoa(userId), strconv.Itoa(chat.Id))
 		_, err := message.ReplyText("Warnings have been reset!")
 		return err
 	} else {

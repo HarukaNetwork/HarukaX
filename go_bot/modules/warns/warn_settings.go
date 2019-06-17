@@ -35,7 +35,7 @@ func setWarnLimit(_ ext.Bot, u *gotgbot.Update, args []string) error {
 					_, err := msg.ReplyText("The minimum warn limit is 3!")
 					return err
 				} else {
-					sql.SetWarnLimit(strconv.Itoa(chat.Id), num)
+					go sql.SetWarnLimit(strconv.Itoa(chat.Id), num)
 					_, err := msg.ReplyHTML(fmt.Sprintf("Updated the warn limit to <b>%v</b>", num))
 					return err
 				}
@@ -65,11 +65,11 @@ func setWarnStrength(_ ext.Bot, u *gotgbot.Update, args []string) error {
 
 	if len(args) > 0 {
 		if strings.ToLower(args[0]) == "on" || strings.ToLower(args[0]) == "yes" {
-			sql.SetWarnStrength(strconv.Itoa(chat.Id), false)
+			go sql.SetWarnStrength(strconv.Itoa(chat.Id), false)
 			_, err := msg.ReplyText("Too many warns will now result in a ban!")
 			return err
 		} else if strings.ToLower(args[0]) == "off" || strings.ToLower(args[0]) == "no" {
-			sql.SetWarnStrength(strconv.Itoa(chat.Id), true)
+			go sql.SetWarnStrength(strconv.Itoa(chat.Id), true)
 			_, err := msg.ReplyText("Too many warns will now result in a kick! Users will be able to join again after.")
 			return err
 		} else {
