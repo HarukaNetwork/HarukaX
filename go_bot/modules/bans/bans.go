@@ -1,7 +1,6 @@
 package bans
 
 import (
-	"fmt"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/chat_status"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/extraction"
@@ -113,7 +112,7 @@ func tempBan(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		_, err := message.ReplyText("Press F, I can't seem to ban this user.")
 		error_handling.HandleErr(err)
 	}
-	_, err = message.ReplyText(fmt.Sprintf("Banned for %s!", timeVal))
+	_, err = message.ReplyHTMLf("Banned for <b>%s</b>!", timeVal)
 	return err
 }
 

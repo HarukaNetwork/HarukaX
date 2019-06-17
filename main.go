@@ -5,6 +5,7 @@ import (
 	"github.com/ATechnoHazard/ginko/go_bot/modules/admin"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/bans"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/misc"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/muting"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/users"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
@@ -26,6 +27,7 @@ func main() {
 	admin.LoadAdmin(u)
 	warns.LoadWarns(u)
 	misc.LoadMisc(u)
+	muting.LoadMuting(u)
 
 	sql.EnsureBotInDb(u)
 
