@@ -18,10 +18,10 @@ func ban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	message := u.EffectiveMessage
 
 	// Permission checks
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, message) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, message, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
 
@@ -63,10 +63,10 @@ func tempBan(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	message := u.EffectiveMessage
 
 	// Permission checks
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, message) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, message, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
 
@@ -122,10 +122,10 @@ func kick(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	message := u.EffectiveMessage
 
 	// Permission checks
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, message) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, message, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
 
@@ -167,7 +167,7 @@ func kickme(_ ext.Bot, u *gotgbot.Update) error {
 	message := u.EffectiveMessage
 
 	// Permission checks
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, message) {
 		return gotgbot.EndGroups{}
 	}
 
@@ -192,7 +192,7 @@ func unban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	message := u.EffectiveMessage
 
 	// Permission checks
-	if !chat_status.RequireBotAdmin(chat) && chat_status.RequireUserAdmin(chat, user.Id, nil) {
+	if !chat_status.RequireBotAdmin(chat, message) && chat_status.RequireUserAdmin(chat, message, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
 

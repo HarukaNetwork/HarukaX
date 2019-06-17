@@ -23,10 +23,10 @@ func addWarnFilter(_ ext.Bot, u *gotgbot.Update) error {
 	var content string
 
 	// Check permissions
-	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, msg, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, msg) {
 		return gotgbot.EndGroups{}
 	}
 
@@ -57,10 +57,10 @@ func removeWarnFilter(_ ext.Bot, u *gotgbot.Update) error {
 	msg := u.EffectiveMessage
 
 	// Check permissions
-	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, msg, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, msg) {
 		return gotgbot.EndGroups{}
 	}
 
@@ -128,7 +128,7 @@ func replyFilter(_ ext.Bot, u *gotgbot.Update) error {
 	chat := u.EffectiveChat
 	message := u.EffectiveMessage
 
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, message) {
 		return gotgbot.EndGroups{}
 	}
 

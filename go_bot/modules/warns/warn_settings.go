@@ -18,10 +18,10 @@ func setWarnLimit(_ ext.Bot, u *gotgbot.Update, args []string) error {
 	user := u.EffectiveUser
 
 	// Check permissions
-	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, msg, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, msg) {
 		return gotgbot.EndGroups{}
 	}
 
@@ -56,10 +56,10 @@ func setWarnStrength(_ ext.Bot, u *gotgbot.Update, args []string) error {
 	user := u.EffectiveUser
 
 	// Check permissions
-	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, msg, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, msg) {
 		return gotgbot.EndGroups{}
 	}
 

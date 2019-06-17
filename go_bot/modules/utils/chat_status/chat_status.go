@@ -61,18 +61,18 @@ func IsBotAdmin(chat *ext.Chat, member *ext.ChatMember) bool {
 	}
 }
 
-func RequireBotAdmin(chat *ext.Chat) bool {
+func RequireBotAdmin(chat *ext.Chat, msg *ext.Message) bool {
 	if !IsBotAdmin(chat, nil) {
-		_, err := chat.Bot.SendMessage(chat.Id, "I'm not admin!")
+		_, err := msg.ReplyText("You must be an admin to perform this action.")
 		error_handling.HandleErr(err)
 		return false
 	}
 	return true
 }
 
-func RequireUserAdmin(chat *ext.Chat, userId int, member *ext.ChatMember) bool {
+func RequireUserAdmin(chat *ext.Chat, msg *ext.Message, userId int, member *ext.ChatMember) bool {
 	if !IsUserAdmin(chat, userId, member) {
-		_, err := chat.Bot.SendMessage(chat.Id, "You must be an admin to perform this action.")
+		_, err := msg.ReplyText("You must be an admin to perform this action.")
 		error_handling.HandleErr(err)
 		return false
 	}

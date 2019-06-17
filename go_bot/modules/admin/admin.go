@@ -22,10 +22,10 @@ func promote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	message := u.EffectiveMessage
 	user := u.EffectiveUser
 
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, message) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, message,  user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
 	if !chat_status.CanPromote(bot, chat) {
@@ -75,10 +75,10 @@ func demote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	message := u.EffectiveMessage
 	user := u.EffectiveUser
 
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, message) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, message, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
 	if !chat_status.CanPromote(bot, chat) {
@@ -118,12 +118,13 @@ func demote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 func pin(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	user := u.EffectiveUser
 	chat := u.EffectiveChat
+	msg := u.EffectiveMessage
 
 	// Check permissions
-	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, msg, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, msg) {
 		return gotgbot.EndGroups{}
 	}
 	if !chat_status.CanPin(bot, chat) {
@@ -150,12 +151,13 @@ func pin(bot ext.Bot, u *gotgbot.Update, args []string) error {
 func unpin(bot ext.Bot, u *gotgbot.Update) error {
 	user := u.EffectiveUser
 	chat := u.EffectiveChat
+	msg := u.EffectiveMessage
 
 	// Check permissions
-	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, msg, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, msg) {
 		return gotgbot.EndGroups{}
 	}
 	if !chat_status.CanPin(bot, chat) {
@@ -172,10 +174,10 @@ func invitelink(bot ext.Bot, u *gotgbot.Update) error {
 	message := u.EffectiveMessage
 
 	// Check permissions
-	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, message, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, message) {
 		return gotgbot.EndGroups{}
 	}
 
@@ -212,7 +214,7 @@ func adminlist(_ ext.Bot, u *gotgbot.Update) error {
 	text := fmt.Sprintf("Admins in <b>%s</b>:", addendum)
 	for _, admin := range admins {
 		user := admin.User
-		name := string_handling.FormatText("[{urltext}](tg://user?id={userid})", "{urltext}", user.FirstName + user.LastName, "{userid}", strconv.Itoa(user.Id))
+		name := string_handling.FormatText("[{urltext}](tg://user?id={userid})", "{urltext}", user.FirstName+user.LastName, "{userid}", strconv.Itoa(user.Id))
 		if user.Username != "" {
 			name = html.EscapeString("@" + user.Username)
 			text += fmt.Sprintf("\n - %s", name)

@@ -77,14 +77,15 @@ func warnUser(_ ext.Bot, u *gotgbot.Update, args []string) error {
 	message := u.EffectiveMessage
 	chat := u.EffectiveChat
 	user := u.EffectiveUser
+	msg := u.EffectiveMessage
 
 	userId, reason := extraction.ExtractUserAndText(message, args)
 
 	// Check permissions
-	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, msg, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, msg) {
 		return gotgbot.EndGroups{}
 	}
 
@@ -136,13 +137,15 @@ func resetWarns(_ ext.Bot, u *gotgbot.Update, args []string) error {
 	message := u.EffectiveMessage
 	chat := u.EffectiveChat
 	user := u.EffectiveUser
+	msg := u.EffectiveMessage
+
 	userId := extraction.ExtractUser(message, args)
 
 	// Check permissions
-	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, msg, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, msg) {
 		return gotgbot.EndGroups{}
 	}
 

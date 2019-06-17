@@ -18,10 +18,10 @@ func mute(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	msg := u.EffectiveMessage
 
 	// Permission checks
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, msg) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, msg, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
 
@@ -60,10 +60,10 @@ func unmute(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	msg := u.EffectiveMessage
 
 	// Permission checks
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, msg) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, msg, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
 
@@ -100,10 +100,10 @@ func tempMute(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	msg := u.EffectiveMessage
 
 	// Permission checks
-	if !chat_status.RequireBotAdmin(chat) {
+	if !chat_status.RequireBotAdmin(chat, msg) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireUserAdmin(chat, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, msg, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
 
