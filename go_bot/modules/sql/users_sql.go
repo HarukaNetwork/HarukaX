@@ -32,7 +32,7 @@ type ChatMembers struct {
 }
 
 func EnsureBotInDb(u *gotgbot.Updater) {
-	models := []interface{}{&Users{}, &Chats{}, &ChatMembers{}}
+	models := []interface{}{&Users{}, &Chats{}, &ChatMembers{}, &Warns{}, &WarnFilters{}, &WarnSettings{}, &BlackListFilters{}}
 	for _, model := range models {
 		_ = SESSION.CreateTable(model, &orm.CreateTableOptions{FKConstraints: true})
 	}

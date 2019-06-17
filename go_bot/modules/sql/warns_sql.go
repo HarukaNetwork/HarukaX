@@ -3,7 +3,6 @@ package sql
 import (
 	"fmt"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
-	"github.com/go-pg/pg/orm"
 )
 
 type Warns struct {
@@ -31,13 +30,6 @@ type WarnSettings struct {
 	ChatId    string `sql:",pk"`
 	WarnLimit int    `sql:",default:3"`
 	SoftWarn  bool   `sql:",default:false"`
-}
-
-func init() {
-	models := []interface{}{&Warns{}, &WarnFilters{}, &WarnSettings{}}
-	for _, model := range models {
-		_ = SESSION.CreateTable(model, &orm.CreateTableOptions{FKConstraints: true})
-	}
 }
 
 func WarnUser(userId string, chatId string, reason string) (int, []string) {

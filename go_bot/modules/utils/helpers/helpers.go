@@ -23,10 +23,10 @@ func SplitMessage(msg string) []string {
 		result := make([]string, 0)
 		for _, line := range lines {
 			if len(smallMsg) + len(line) < MAX_MESSAGE_LENGTH {
-				smallMsg += line
+				smallMsg += line + "\n"
 			} else {
 				result = append(result, smallMsg)
-				smallMsg = line
+				smallMsg = line + "\n"
 			}
 		}
 		result = append(result, smallMsg)

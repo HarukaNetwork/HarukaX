@@ -206,6 +206,7 @@ func LoadWarns(u *gotgbot.Updater) {
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("warns", warns))
 	u.Dispatcher.AddHandler(handlers.NewCommand("addwarn", addWarnFilter))
 	u.Dispatcher.AddHandler(handlers.NewCommand("nowarn", removeWarnFilter))
+	u.Dispatcher.AddHandler(handlers.NewCommand("rmwarn", removeWarnFilter)) // Just an alias for nowarn
 	u.Dispatcher.AddHandler(handlers.NewCommand("warnlist", listWarnFilters))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("warnlimit", setWarnLimit))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("strongwarn", setWarnStrength))
