@@ -9,10 +9,16 @@ import (
 	"github.com/PaulSonOfLars/gotgbot"
 	"github.com/PaulSonOfLars/gotgbot/ext"
 	"github.com/PaulSonOfLars/gotgbot/handlers"
+	"github.com/sirupsen/logrus"
+	"github.com/tcnksm/go-httpstat"
 	"html"
+	"io"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func getId(bot ext.Bot, u *gotgbot.Update, args []string) error {
@@ -97,8 +103,33 @@ func info(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	return err
 }
 
+func ping(_ ext.Bot, u *gotgbot.Update) error {
+	req, err := http.NewRequest("GET", "https://google.com", nil)
+	error_handling.HandleErr(err)
+
+	var result httpstat.Result
+	ctx := httpstat.WithHTTPStat(req.Context(), &result)
+	req = req.WithContext(ctx)
+
+	client := http.DefaultClient
+	res, err := client.Do(req)
+	error_handling.HandleErr(err)
+
+	if _, err := io.Copy(ioutil.Discard, res.Body); err != nil {
+		logrus.Println(err)
+	}
+
+	_ = res.Body.Close()
+
+	text := fmt.Sprintf("Ping: <b>%d</b> ms", result.ServerProcessing/time.Millisecond)
+
+	_, err = u.EffectiveMessage.ReplyHTML(text)
+	return err
+}
+
 func LoadMisc(u *gotgbot.Updater) {
 	defer log.Println("Loading module misc")
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("id", getId))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("info", info))
+	u.Dispatcher.AddHandler(handlers.NewCommand("ping", ping))
 }

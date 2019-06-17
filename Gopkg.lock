@@ -74,6 +74,14 @@
   version = "v1.4.2"
 
 [[projects]]
+  digest = "1:125aa07b364dc440ebebc8f93a7120c2b309781e53d6cfda543db8bc61a9e858"
+  name = "github.com/tcnksm/go-httpstat"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "ae0d799e7ee65d3dc46d7272368daa830aef6c5a"
+  version = "v0.2.0"
+
+[[projects]]
   branch = "master"
   digest = "1:f92f6956e4059f6a3efc14924d2dd58ba90da25cc57fe07ae3779ef2f5e0c5f2"
   name = "golang.org/x/crypto"
@@ -110,6 +118,7 @@
     "github.com/go-pg/pg/orm",
     "github.com/joho/godotenv",
     "github.com/sirupsen/logrus",
+    "github.com/tcnksm/go-httpstat",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
