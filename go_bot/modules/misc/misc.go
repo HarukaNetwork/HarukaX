@@ -88,7 +88,7 @@ func info(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	} else {
 		for _, id := range go_bot.BotConfig.SudoUsers {
 			if strconv.Itoa(user.Id) == id {
-				text += "\nThis person is one of my sudo users! " +
+				text += "\n\nThis person is one of my sudo users! " +
 					"Nearly as powerful as my owner - so watch it."
 			}
 		}
