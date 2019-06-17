@@ -38,7 +38,7 @@ func main() {
 
 func start(_ ext.Bot, u *gotgbot.Update) error {
 	msg := u.EffectiveMessage
-	_, err := msg.ReplyText("Hewwo, chu started me desu~")
+	_, err := msg.ReplyText("Hi there!")
 	error_handling.HandleErr(err)
 	return nil
 }
