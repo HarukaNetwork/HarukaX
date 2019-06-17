@@ -9,6 +9,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot"
 	"github.com/PaulSonOfLars/gotgbot/ext"
 	"github.com/PaulSonOfLars/gotgbot/handlers"
+	"log"
 	"strings"
 )
 
@@ -154,6 +155,7 @@ func tempMute(bot ext.Bot, u *gotgbot.Update, args []string) error {
 }
 
 func LoadMuting(u *gotgbot.Updater) {
+	defer log.Println("Loading module muting")
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("mute", mute))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("unmute", unmute))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("tmute", tempMute))

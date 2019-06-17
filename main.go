@@ -4,6 +4,7 @@ import (
 	"github.com/ATechnoHazard/ginko/go_bot"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/admin"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/bans"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/deleting"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/misc"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/muting"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
@@ -19,7 +20,7 @@ import (
 func main() {
 	log.Println("Starting long polling")
 	u, err := gotgbot.NewUpdater(go_bot.BotConfig.ApiKey)
-	error_handling.HandleErrorAndExit(err)
+	error_handling.FatalError(err)
 
 	// Add module handlers
 	bans.LoadBans(u)
@@ -28,6 +29,7 @@ func main() {
 	warns.LoadWarns(u)
 	misc.LoadMisc(u)
 	muting.LoadMuting(u)
+	deleting.LoadDelete(u)
 
 	sql.EnsureBotInDb(u)
 

@@ -8,12 +8,12 @@ type CommandCallback func()
 
 func HandleErr(err error) {
 	if err != nil {
-		log.Println("Error: ", err)
+		log.Println(err)
 	}
 }
 
-func HandleErrorAndExit(err error) {
+func FatalError(err error) {
 	if err != nil {
-		log.Fatal("Error: ", err)
+		log.Fatal(err)
 	}
 }

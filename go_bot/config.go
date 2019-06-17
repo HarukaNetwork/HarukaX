@@ -25,7 +25,7 @@ var BotConfig Config
 // Returns a config object generated from the dotenv file
 func init() {
 	err := godotenv.Load()
-	error_handling.HandleErrorAndExit(err)
+	error_handling.FatalError(err)
 	returnConfig := Config{}
 
 	// Assign config struct values by loading them from the env
@@ -48,7 +48,7 @@ func init() {
 	}
 
 	returnConfig.OwnerId, err = strconv.Atoi(os.Getenv("OWNER_ID"))
-	error_handling.HandleErrorAndExit(err)
+	error_handling.FatalError(err)
 
 	returnConfig.SudoUsers = strings.Split(os.Getenv("SUDO_USERS"), " ")
 
