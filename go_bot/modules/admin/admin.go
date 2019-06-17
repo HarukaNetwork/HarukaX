@@ -5,6 +5,7 @@ import (
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/chat_status"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/extraction"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/helpers"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/string_handling"
 	"github.com/PaulSonOfLars/gotgbot"
 	"github.com/PaulSonOfLars/gotgbot/ext"
@@ -41,12 +42,6 @@ func promote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	userMember, err := chat.GetMember(userId)
 	error_handling.HandleErr(err)
 
-	if userMember.Status == "administrator" || userMember.Status == "creator" {
-		_, err := message.ReplyText("Am I supposed to give them a second star or something?")
-		error_handling.HandleErr(err)
-		return nil
-	}
-
 	if userId == bot.Id {
 		_, err := message.ReplyText("If only I could do this to myself ;_;")
 		error_handling.HandleErr(err)
@@ -69,7 +64,7 @@ func promote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	_, err = sendablePromoteChatMember.Send()
 	error_handling.HandleErr(err)
 
-	_, err = message.ReplyText("Successfully promoted!")
+	_, err = message.ReplyHTMLf("Successfully promoted %v!", helpers.MentionHtml(userId, userMember.User.FirstName))
 
 	return err
 }
@@ -98,11 +93,6 @@ func demote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 
 	userMember, err := chat.GetMember(userId)
 	error_handling.HandleErr(err)
-
-	if !(userMember.Status == "administrator") {
-		_, err := message.ReplyText("Can't demote what wasn't promoted!")
-		return err
-	}
 
 	if userMember.Status == "creator" {
 		_, err := message.ReplyText("This person CREATED the chat, how would I demote them?")
