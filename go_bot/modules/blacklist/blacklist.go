@@ -162,7 +162,7 @@ func delBlacklist(_ ext.Bot, u *gotgbot.Update) error {
 		if re.MatchString(toMatch) {
 			_, err := msg.Delete()
 			if err != nil {
-				if err.Error() != "Bad Request: message to delete not found" {
+				if err.Error() != "Bad Request: message to delete not found" || err.Error() != "Bad Request: reply message not found" {
 					error_handling.HandleErr(err)
 				} else {
 					log.Println("Error while deleting blacklist message")
