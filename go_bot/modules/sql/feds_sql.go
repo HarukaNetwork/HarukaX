@@ -17,7 +17,7 @@ type ChatF struct {
 
 type UserF struct {
 	UserId string `sql:",pk"`
-	FedId  string
+	FedId  []string
 }
 
 type RulesF struct {
@@ -77,8 +77,22 @@ func DelFed(fedId string) {
 	error_handling.HandleErr(err)
 
 	var users []UserF
-	_, err = SESSION.Model(&users).Where("fed_id = ?", fedId).Delete()
+	err = SESSION.Model(&users).Select()
 	error_handling.HandleErr(err)
+	for _, user := range users {
+		for i, fed := range user.FedId {
+			if fedId == fed {
+				user.FedId = append(user.FedId[:i], user.FedId[i+1:]...)
+				if len(user.FedId) == 0 {
+					_, err = SESSION.Model(&user).WherePK().Delete()
+					error_handling.HandleErr(err)
+				} else {
+					_, err = SESSION.Model(user).OnConflict("(user_id) DO UPDATE").Set("fed_id = EXCLUDED.fed_id").Insert()
+					error_handling.HandleErr(err)
+				}
+			}
+		}
+	}
 
 	rules := &RulesF{}
 	_, err = SESSION.Model(rules).Where("fed_id = ?", fedId).Delete()
@@ -97,12 +111,18 @@ func SearchFedByName(fedName string) string {
 
 func SearchUserInFed(fedId string, userId string) string {
 	user := &UserF{}
-	err := SESSION.Model(user).Where("fed_id = ?", fedId).Where("user_id = ?", userId).Select()
+	err := SESSION.Model(user).Where("user_id = ?", userId).Select()
 	if err != nil {
 		return ""
-	} else {
-		return user.UserId
 	}
+
+	for _, fed := range user.FedId {
+		if fed == fedId {
+			return user.UserId
+		}
+	}
+
+	return ""
 }
 
 func ChatJoinFed(fedId string, chatId string) bool {
@@ -112,13 +132,27 @@ func ChatJoinFed(fedId string, chatId string) bool {
 }
 
 func UserDemoteFed(fedId string, userId string) bool {
-	user := &UserF{UserId: userId, FedId: fedId}
-	err := SESSION.Delete(user)
+	user := &UserF{UserId: userId}
+	_ = SESSION.Model(user).WherePK().Select()
+
+	for i, fed := range user.FedId {
+		if fedId == fed {
+			user.FedId = append(user.FedId[:i], user.FedId[i+1:]...)
+			if len(user.FedId) == 0 {
+				err := SESSION.Delete(user)
+				return err == nil
+			}
+		}
+	}
+
+	_, err := SESSION.Model(user).OnConflict("(user_id) DO UPDATE").Set("fed_id = EXCLUDED.fed_id").Insert()
 	return err == nil
 }
 
-func UserJoinFed(fedId string, userId string) *UserF {
-	user := &UserF{FedId: fedId, UserId: userId}
+func UserPromoteFed(fedId string, userId string) *UserF {
+	user := &UserF{UserId: userId}
+	_ = SESSION.Model(user).WherePK().Select()
+	user.FedId = append(user.FedId, fedId)
 	_, err := SESSION.Model(user).OnConflict("(user_id) DO UPDATE").Set("fed_id = EXCLUDED.fed_id").Insert()
 	if err != nil {
 		return nil
@@ -234,9 +268,14 @@ func GetAllFedsUsersGlobal() []string {
 	return tmp
 }
 
+func IsUserFedOwner(userId string, fedId string) bool {
+	fed := SearchFedById(fedId)
+	return fed.OwnerId == userId
+}
+
 func SearchFedById(fedId string) *Federations {
 	fed := &Federations{FedId: fedId}
-	err := SESSION.Model(fed).WherePK().Select()
+	err := SESSION.Model(fed).Where("fed_id = ?", fedId).Select()
 	if err != nil {
 		return nil
 	} else {

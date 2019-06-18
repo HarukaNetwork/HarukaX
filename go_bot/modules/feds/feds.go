@@ -2,6 +2,9 @@ package feds
 
 import (
 	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/extraction"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/helpers"
 	"github.com/PaulSonOfLars/gotgbot"
 	"github.com/PaulSonOfLars/gotgbot/ext"
 	"github.com/PaulSonOfLars/gotgbot/handlers"
@@ -11,7 +14,7 @@ import (
 	"strings"
 )
 
-func NewFed(_ ext.Bot, u *gotgbot.Update) error {
+func newFed(_ ext.Bot, u *gotgbot.Update) error {
 	user := u.EffectiveUser
 	msg := u.EffectiveMessage
 
@@ -38,7 +41,7 @@ func NewFed(_ ext.Bot, u *gotgbot.Update) error {
 	return err
 }
 
-func DelFed(_ ext.Bot, u *gotgbot.Update) error {
+func delFed(_ ext.Bot, u *gotgbot.Update) error {
 	user := u.EffectiveUser
 	msg := u.EffectiveMessage
 
@@ -59,8 +62,187 @@ func DelFed(_ ext.Bot, u *gotgbot.Update) error {
 	return err
 }
 
+func chatFed(_ ext.Bot, u *gotgbot.Update) error {
+	chat := u.EffectiveChat
+	msg := u.EffectiveMessage
+
+	if chat.Type == "private" {
+		_, err := msg.ReplyText("Your PM cannot be part of a federation!")
+		return err
+	}
+
+	fedId := sql.GetFedId(strconv.Itoa(chat.Id))
+
+	if fedId == "" {
+		_, err := msg.ReplyText("This chat is not part of a federation.")
+		return err
+	}
+
+	fed := sql.GetFedInfo(fedId)
+	_, err := msg.ReplyHTMLf("This chat is part of the following federation:" +
+		"\n<b>%v</b> (ID: <code>%v</code>)", fed.FedName, fedId)
+	return err
+}
+
+func joinFed(_ ext.Bot, u *gotgbot.Update, args []string) error {
+	chat := u.EffectiveChat
+	user := u.EffectiveUser
+	msg := u.EffectiveMessage
+
+	member, err := chat.GetMember(user.Id)
+	error_handling.HandleErr(err)
+
+	if member.Status != "creator" {
+		_, err := msg.ReplyText("Only group creators can join federations.")
+		return err
+	}
+
+	fedId := sql.GetFedId(strconv.Itoa(chat.Id))
+	if fedId != "" {
+		_, err := msg.ReplyText("You cannot join more that one federation per chat!")
+		return err
+	}
+
+	if len(args) >= 1 {
+		toJoinId := args[0]
+		fed := sql.SearchFedById(toJoinId)
+		if fed == nil {
+			_, err := msg.ReplyText("Please enter a valid federation ID!")
+			return err
+		}
+
+		result := sql.ChatJoinFed(toJoinId, strconv.Itoa(chat.Id))
+		if !result {
+			_, err := msg.ReplyText("Well damn, I couldn't join that fed.")
+			return err
+		}
+		_, err := msg.ReplyHTMLf("Joined federation <b>%v</b>.", fed.FedName)
+		return err
+	} else {
+		_, err := msg.ReplyText("Please enter a federation ID!")
+		return err
+	}
+}
+
+func leaveFed(_ ext.Bot, u *gotgbot.Update) error {
+	chat := u.EffectiveChat
+	user := u.EffectiveUser
+	msg := u.EffectiveMessage
+
+	member, err := chat.GetMember(user.Id)
+	error_handling.HandleErr(err)
+
+	if member.Status != "creator" {
+		_, err := msg.ReplyText("Only group creators can leave federations.")
+		return err
+	}
+
+	if sql.ChatLeaveFed(strconv.Itoa(chat.Id)) {
+		_, err := msg.ReplyHTMLf("Left federation!")
+		return err
+	} else {
+		_, err := msg.ReplyHTMLf("This chat isn't in any federations!")
+		return err
+	}
+}
+
+func fedPromote(bot ext.Bot, u *gotgbot.Update, args []string) error {
+	user := u.EffectiveUser
+	msg := u.EffectiveMessage
+
+	uId := extraction.ExtractUser(msg, args)
+	userId := strconv.Itoa(uId)
+	if userId == "0" {
+		_, err := msg.ReplyText("Try targeting a user next time bud.")
+		return err
+	}
+
+	member, err := bot.GetChat(uId)
+	error_handling.HandleErr(err)
+
+	fed := sql.GetFedFromUser(strconv.Itoa(user.Id))
+	if fed == nil {
+		_, err := msg.ReplyText("You aren't the creator of any federations.")
+		return err
+	}
+
+	if userId == fed.OwnerId {
+		_, err := msg.ReplyText("Why are you trying to promote yourself in your own federation?")
+		return err
+	}
+
+	if sql.SearchUserInFed(fed.FedId, userId) != "" {
+		_, err := msg.ReplyText("This user is already a federation admin in your federation.")
+		return err
+	}
+
+	if userId == strconv.Itoa(bot.Id) {
+		_, err := msg.ReplyText("I don't need to be an admin in any feds!")
+		return err
+	}
+
+	res := sql.UserPromoteFed(fed.FedId, userId)
+
+	if res == nil {
+		_, err := msg.ReplyText("Well damn, I can't seem to promote that user.")
+		return err
+	}
+
+
+	_, err = msg.ReplyHTMLf("User %v is now an admin of <b>%v</b> (<code>%v</code>)", helpers.MentionHtml(uId, member.FirstName), fed.FedName, fed.FedId)
+	return err
+}
+
+func fedDemote(bot ext.Bot, u *gotgbot.Update, args []string) error {
+	user := u.EffectiveUser
+	msg := u.EffectiveMessage
+
+	uId := extraction.ExtractUser(msg, args)
+	userId := strconv.Itoa(uId)
+	if userId == "0" {
+		_, err := msg.ReplyText("Try targeting a user next time bud.")
+		return err
+	}
+
+	member, err := bot.GetChat(uId)
+	error_handling.HandleErr(err)
+
+	fed := sql.GetFedFromUser(strconv.Itoa(user.Id))
+	if fed == nil {
+		_, err := msg.ReplyText("You aren't the creator of any federations.")
+		return err
+	}
+
+	if userId == fed.OwnerId {
+		_, err := msg.ReplyText("Why are you trying to demote yourself in your own federation?")
+		return err
+	}
+
+	if sql.SearchUserInFed(fed.FedId, userId) == "" {
+		_, err := msg.ReplyText("This user is not a federation admin in your federation.")
+		return err
+	}
+
+	res := sql.UserDemoteFed(fed.FedId, userId)
+
+	if !res {
+		_, err := msg.ReplyText("Well damn, I can't seem to demote that user.")
+		return err
+	}
+
+	_, err = msg.ReplyHTMLf("User %v is no longer an admin of <b>%v</b> (<code>%v</code>)", helpers.MentionHtml(uId, member.FirstName), fed.FedName, fed.FedId)
+	return err
+}
+
+
+
 func LoadFeds(u *gotgbot.Updater) {
 	defer log.Println("Loading module feds")
-	u.Dispatcher.AddHandler(handlers.NewCommand("newfed", NewFed))
-	u.Dispatcher.AddHandler(handlers.NewCommand("delfed", DelFed))
+	u.Dispatcher.AddHandler(handlers.NewCommand("newfed", newFed))
+	u.Dispatcher.AddHandler(handlers.NewCommand("delfed", delFed))
+	u.Dispatcher.AddHandler(handlers.NewCommand("chatfed", chatFed))
+	u.Dispatcher.AddHandler(handlers.NewArgsCommand("joinfed", joinFed))
+	u.Dispatcher.AddHandler(handlers.NewCommand("leavefed", leaveFed))
+	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedpromote", fedPromote))
+	u.Dispatcher.AddHandler(handlers.NewArgsCommand("feddemote", fedDemote))
 }
