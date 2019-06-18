@@ -186,5 +186,5 @@ func LoadBlacklist(u *gotgbot.Updater) {
 	u.Dispatcher.AddHandler(handlers.NewCommand("rmblacklist", unblacklist))
 	u.Dispatcher.AddHandler(handlers.NewCommand("unblacklist", unblacklist))
 	blacklistMessage.AllowEdited = true
-	u.Dispatcher.AddHandler(blacklistMessage)
+	u.Dispatcher.AddHandlerToGroup(blacklistMessage, 11)
 }
