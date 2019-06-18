@@ -48,3 +48,7 @@
 [[constraint]]
   name = "github.com/tcnksm/go-httpstat"
   version = "0.2.0"
+
+[[constraint]]
+  name = "github.com/google/uuid"
+  version = "1.1.1"

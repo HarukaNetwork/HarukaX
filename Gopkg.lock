@@ -34,6 +34,14 @@
   version = "v8.0.4"
 
 [[projects]]
+  digest = "1:582b704bebaa06b48c29b0cec224a6058a09c86883aaddabde889cd1a5f73e1b"
+  name = "github.com/google/uuid"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "0cd6bf5da1e1c83f8b45653022c74f71af0538a4"
+  version = "v1.1.1"
+
+[[projects]]
   digest = "1:01ed62f8f4f574d8aff1d88caee113700a2b44c42351943fa73cc1808f736a50"
   name = "github.com/jinzhu/inflection"
   packages = ["."]
@@ -116,6 +124,7 @@
     "github.com/PaulSonOfLars/gotgbot/parsemode",
     "github.com/go-pg/pg",
     "github.com/go-pg/pg/orm",
+    "github.com/google/uuid",
     "github.com/joho/godotenv",
     "github.com/sirupsen/logrus",
     "github.com/tcnksm/go-httpstat",

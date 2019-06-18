@@ -5,9 +5,9 @@ import (
 )
 
 type Federations struct {
-	OwnerId string
+	OwnerId string `sql:",pk"`
 	FedName string
-	FedId   string `sql:",pk"`
+	FedId   string
 }
 
 type ChatF struct {
@@ -38,30 +38,46 @@ func GetFedInfo(fedId string) *Federations {
 	return fed
 }
 
+func GetFedFromUser(userId string) *Federations {
+	fed := &Federations{OwnerId: userId}
+	err := SESSION.Model(fed).WherePK().Select()
+	if err != nil {
+		return nil
+	}
+	return fed
+}
+
 func GetFedId(chatId string) string {
 	chat := &ChatF{}
 	err := SESSION.Model(chat).Where("chat_id = ?", chatId).Select()
-	error_handling.HandleErr(err)
+	if err != nil {
+		return ""
+	}
 	return chat.FedId
 }
 
-func NewFed(ownerId string, fedId string, fedName string) bool {
+func NewFed(ownerId string, fedId string, fedName string) string {
 	fed := &Federations{OwnerId: ownerId, FedId: fedId, FedName: fedName}
-	err := SESSION.Insert(fed)
-	return err == nil
+	_, err := SESSION.Model(fed).OnConflict("(owner_id) DO UPDATE").Set("fed_name = EXCLUDED.fed_name").Insert()
+	if err != nil {
+		return ""
+	}
+	tmp := &Federations{OwnerId: ownerId}
+	err = SESSION.Model(tmp).WherePK().Select()
+	return tmp.FedId
 }
 
-func DelFed(fedId string, chatId string) {
+func DelFed(fedId string) {
 	fed := &Federations{}
 	_, err := SESSION.Model(fed).Where("fed_id = ?", fedId).Delete()
 	error_handling.HandleErr(err)
 
 	chat := &ChatF{}
-	_, err = SESSION.Model(chat).Where("chat_id = ?", chatId).Delete()
+	_, err = SESSION.Model(chat).Where("fed_id = ?", fedId).Delete()
 	error_handling.HandleErr(err)
 
 	var users []UserF
-	_, err = SESSION.Model(&users).Where("fed_id == ?", fedId).Delete()
+	_, err = SESSION.Model(&users).Where("fed_id = ?", fedId).Delete()
 	error_handling.HandleErr(err)
 
 	rules := &RulesF{}

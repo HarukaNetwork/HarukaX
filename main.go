@@ -6,6 +6,7 @@ import (
 	"github.com/ATechnoHazard/ginko/go_bot/modules/bans"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/blacklist"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/deleting"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/feds"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/misc"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/muting"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
@@ -32,6 +33,7 @@ func main() {
 	muting.LoadMuting(u)
 	deleting.LoadDelete(u)
 	blacklist.LoadBlacklist(u)
+	feds.LoadFeds(u)
 
 	sql.EnsureBotInDb(u)
 
