@@ -20,9 +20,15 @@ import (
 )
 
 func main() {
-	log.Println("Starting long polling")
+	// Create updater instance
 	u, err := gotgbot.NewUpdater(go_bot.BotConfig.ApiKey)
 	error_handling.FatalError(err)
+
+	// Add start handler
+	u.Dispatcher.AddHandler(handlers.NewCommand("start", start))
+
+	// Create database tables if not already existing
+	sql.EnsureBotInDb(u)
 
 	// Add module handlers
 	bans.LoadBans(u)
@@ -35,10 +41,7 @@ func main() {
 	blacklist.LoadBlacklist(u)
 	feds.LoadFeds(u)
 
-	sql.EnsureBotInDb(u)
-
-	u.Dispatcher.AddHandler(handlers.NewCommand("start", start))
-
+	log.Println("Starting long polling")
 	err = u.StartPolling()
 	error_handling.HandleErr(err)
 	u.Idle()
