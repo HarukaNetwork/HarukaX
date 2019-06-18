@@ -34,7 +34,9 @@ type BansF struct {
 func GetFedInfo(fedId string) *Federations {
 	fed := &Federations{}
 	err := SESSION.Model(fed).Where("fed_id = ?", fedId).Select()
-	error_handling.HandleErr(err)
+	if err != nil {
+		return nil
+	}
 	return fed
 }
 
@@ -109,7 +111,7 @@ func SearchFedByName(fedName string) string {
 	}
 }
 
-func SearchUserInFed(fedId string, userId string) string {
+func IsUserFedAdmin(fedId string, userId string) string {
 	user := &UserF{}
 	err := SESSION.Model(user).Where("user_id = ?", userId).Select()
 	if err != nil {
@@ -121,7 +123,6 @@ func SearchUserInFed(fedId string, userId string) string {
 			return user.UserId
 		}
 	}
-
 	return ""
 }
 
@@ -177,14 +178,22 @@ func AllFedChats(fedId string) []string {
 	return tmp
 }
 
-func AllFedUsers(fedId string) []string {
+func AllFedAdmins(fedId string) []UserF {
 	var users []UserF
-	err := SESSION.Model(&users).Where("fed_id = ?", fedId).Select()
+	err := SESSION.Model(&users).Select()
 	error_handling.HandleErr(err)
-	tmp := make([]string, 0)
+
+	tmp := make([]UserF, 0)
+
 	for _, user := range users {
-		tmp = append(tmp, user.UserId)
+		for _, fed := range user.FedId {
+			if fedId == fed {
+				tmp = append(tmp, user)
+				continue
+			}
+		}
 	}
+
 	return tmp
 }
 
@@ -238,6 +247,17 @@ func GetFbanUser(fedId string, userId string) *BansF {
 	}
 }
 
+func GetAllFbanUsers(fedId string) []BansF {
+	var bans []BansF
+	err := SESSION.Model(&bans).Where("fed_id = ?", fedId).Select()
+	if err != nil {
+		error_handling.HandleErr(err)
+		return make([]BansF, 0)
+	}
+
+	return bans
+}
+
 func GetAllFbanUsersGlobal() []string {
 	var bans []BansF
 	err := SESSION.Model(&bans).Select()
@@ -253,7 +273,7 @@ func GetAllFbanUsersGlobal() []string {
 	return tmp
 }
 
-func GetAllFedsUsersGlobal() []string {
+func GetAllFedsAdminsGlobal() []string {
 	var feds []Federations
 	err := SESSION.Model(&feds).Select()
 	if err != nil {
@@ -278,7 +298,6 @@ func SearchFedById(fedId string) *Federations {
 	err := SESSION.Model(fed).Where("fed_id = ?", fedId).Select()
 	if err != nil {
 		return nil
-	} else {
-		return fed
 	}
+		return fed
 }

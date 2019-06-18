@@ -1,6 +1,7 @@
 package feds
 
 import (
+	"fmt"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/extraction"
@@ -171,7 +172,7 @@ func fedPromote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		return err
 	}
 
-	if sql.SearchUserInFed(fed.FedId, userId) != "" {
+	if sql.IsUserFedAdmin(fed.FedId, userId) != "" {
 		_, err := msg.ReplyText("This user is already a federation admin in your federation.")
 		return err
 	}
@@ -218,7 +219,7 @@ func fedDemote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		return err
 	}
 
-	if sql.SearchUserInFed(fed.FedId, userId) == "" {
+	if sql.IsUserFedAdmin(fed.FedId, userId) == "" {
 		_, err := msg.ReplyText("This user is not a federation admin in your federation.")
 		return err
 	}
@@ -234,7 +235,43 @@ func fedDemote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	return err
 }
 
+func fedInfo(_ ext.Bot, u *gotgbot.Update, args []string) error {
+	user := u.EffectiveUser
+	msg := u.EffectiveMessage
+	var fedId string
+	var fed *sql.Federations
+	if len(args) >= 1 {
+		fedId = args[0]
+		fed = sql.GetFedInfo(fedId)
+		if fed == nil {
+			_, err := msg.ReplyText("Please use a valid federation ID.")
+			return err
+		}
+	} else {
+		fed = sql.GetFedFromUser(strconv.Itoa(user.Id))
+		fedId = fed.FedId
+		if fed == nil {
+			_, err := msg.ReplyText("You aren't the creator of any federations!")
+			return err
+		}
+	}
 
+	ownerId, _ := strconv.Atoi(fed.OwnerId)
+
+	text := fmt.Sprintf("<b>Fed info:</b>" +
+		"\nFedID: <code>%v</code>" +
+		"\nName: %v" +
+		"\nCreator: %v" +
+		"\nNumber of admins: <code>%v</code>" +
+		"\nNumber of bans: <code>%v</code>" +
+		"\nNumber of connected chats: <code>%v</code>", fed.FedId, fed.FedName, helpers.MentionHtml(ownerId, "this person"),
+		len(sql.AllFedAdmins(fedId)) + 1,
+		len(sql.GetAllFbanUsers(fedId)),
+		len(sql.AllFedChats(fedId)))
+
+	_, err := msg.ReplyHTML(text)
+	return err
+}
 
 func LoadFeds(u *gotgbot.Updater) {
 	defer log.Println("Loading module feds")
@@ -245,4 +282,5 @@ func LoadFeds(u *gotgbot.Updater) {
 	u.Dispatcher.AddHandler(handlers.NewCommand("leavefed", leaveFed))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedpromote", fedPromote))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("feddemote", fedDemote))
+	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedinfo", fedInfo))
 }
