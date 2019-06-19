@@ -45,11 +45,12 @@ func fedInfo(_ ext.Bot, u *gotgbot.Update, args []string) error {
 		}
 	} else {
 		fed = sql.GetFedFromUser(strconv.Itoa(user.Id))
-		fedId = fed.FedId
 		if fed == nil {
 			_, err := msg.ReplyText("You aren't the creator of any federations!")
 			return err
 		}
+		fedId = fed.FedId
+
 	}
 
 	ownerId, _ := strconv.Atoi(fed.OwnerId)

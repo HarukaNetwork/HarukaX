@@ -77,6 +77,10 @@ func DelFed(fedId string) {
 	_, err = SESSION.Model(chat).Where("fed_id = ?", fedId).Delete()
 	error_handling.HandleErr(err)
 
+	bans := &BansF{}
+	_, err = SESSION.Model(bans).Where("fed_id = ?", fedId).Delete()
+	error_handling.HandleErr(err)
+
 	rules := &RulesF{}
 	_, err = SESSION.Model(rules).Where("fed_id = ?", fedId).Delete()
 	error_handling.HandleErr(err)
