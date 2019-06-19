@@ -36,13 +36,13 @@ func fedBan(bot ext.Bot, u *gotgbot.Update, args []string) error {
 
 	fed := sql.GetFedInfo(fedId)
 
-	if sql.IsUserFedAdmin(fedId, strconv.Itoa(user.Id)) == "" {
-		_, err := msg.ReplyHTMLf("You aren't a federation admin for <b>%v</b>", fed.FedName)
+	if fed == nil {
+		_, err := msg.ReplyText("Please give me a valid fed ID!")
 		return err
 	}
 
-	if fed == nil {
-		_, err := msg.ReplyText("Please give me a valid fed ID!")
+	if sql.IsUserFedAdmin(fedId, strconv.Itoa(user.Id)) == "" {
+		_, err := msg.ReplyHTMLf("You aren't a federation admin for <b>%v</b>", fed.FedName)
 		return err
 	}
 
