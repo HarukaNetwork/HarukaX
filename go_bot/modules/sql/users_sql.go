@@ -27,15 +27,20 @@ func (c Chats) String() string {
 }
 
 type ChatMembers struct {
-	Chat       string `sql:",pk" pg:"fk:ChatId"`
-	User       int    `sql:",pk" pg:"fk:UserId"`
+	Chat       string `sql:",pk" pg:"fk:chat_id"`
+	User       int    `sql:",pk" pg:"fk:user_id"`
 }
 
 func EnsureBotInDb(u *gotgbot.Updater) {
 	models := []interface{}{&Users{}, &Chats{}, &ChatMembers{}, &Warns{}, &WarnFilters{}, &WarnSettings{}, &BlackListFilters{},
-		&Federations{}, &ChatF{}, &RulesF{}, &BansF{}}
+		&Federations{}, &ChatF{}, &BansF{}}
 	for _, model := range models {
-		_ = SESSION.CreateTable(model, &orm.CreateTableOptions{FKConstraints: true})
+		err := SESSION.CreateTable(model, &orm.CreateTableOptions{FKConstraints: true})
+		if err != nil {
+			if !strings.HasSuffix(err.Error(), "already exists") {
+				error_handling.HandleErr(err)
+			}
+		}
 	}
 
 	// Insert bot user only if it doesn't exist already
