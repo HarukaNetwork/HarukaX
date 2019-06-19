@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"github.com/ATechnoHazard/ginko/go_bot"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/chat_status"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/extraction"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/helpers"
 	"github.com/PaulSonOfLars/gotgbot"
 	"github.com/PaulSonOfLars/gotgbot/ext"
 	"github.com/PaulSonOfLars/gotgbot/handlers"
+	"github.com/PaulSonOfLars/gotgbot/handlers/Filters"
 	"log"
 	"strconv"
 )
@@ -84,6 +86,7 @@ func fedBan(bot ext.Bot, u *gotgbot.Update, args []string) error {
 				_, err = bot.SendMessageHTML(chatId, fmt.Sprintf("User %v is banned in the current federation " +
 					"(%v), and so has been removed." +
 					"\n<b>Reason</b>: %v", helpers.MentionHtml(member.Id, member.FirstName), fed.FedName, reason))
+				error_handling.HandleErr(err)
 			}
 		}(bot, member, userId, fed, reason)
 
@@ -108,6 +111,90 @@ func fedBan(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	}
 }
 
+func unfedban(bot ext.Bot, u *gotgbot.Update, args []string) error {
+	chat := u.EffectiveChat
+	user := u.EffectiveUser
+	msg := u.EffectiveMessage
+	fedId := sql.GetFedId(strconv.Itoa(chat.Id))
+
+	if fedId == "" {
+		_, err := msg.ReplyText("This chat is not part of any federation!")
+		return err
+	}
+
+	userId, _ := extraction.ExtractUserAndText(msg, args)
+
+	if userId == 0 {
+		_, err := msg.ReplyText("Try targeting a user next time bud.")
+		return err
+	}
+
+	fed := sql.GetFedInfo(fedId)
+
+	if sql.IsUserFedAdmin(fedId, strconv.Itoa(user.Id)) == "" {
+		_, err := msg.ReplyHTMLf("You aren't a federation admin for <b>%v</b>", fed.FedName)
+		return err
+	}
+
+	fbannedUser := sql.GetFbanUser(fedId, strconv.Itoa(userId))
+
+	if fbannedUser == nil {
+		_, err := msg.ReplyHTMLf("This user isn't banned in the current federation, <b>%v</b>.\n(<code>%v</code>)", fed.FedName, fed.FedId)
+		return err
+	}
+
+	go sql.UnFbanUser(fedId, strconv.Itoa(userId))
+
+	member, _ := bot.GetChat(userId)
+
+	go func(bot ext.Bot, user *ext.Chat, userId int, federations *sql.Federations) {
+		for _, chat := range sql.AllFedChats(fedId) {
+			chatId, err := strconv.Atoi(chat)
+			error_handling.HandleErr(err)
+			_, err = bot.UnbanChatMember(chatId, userId)
+			error_handling.HandleErr(err)
+		}
+	}(bot, member, userId, fed)
+
+	_, err := msg.ReplyHTMLf("<b>New un-FedBan</b>" +
+		"\n<b>Fed</b>: %v" +
+		"\n<b>FedAdmin</b>: %v" +
+		"\n<b>User</b>: %v" +
+		"\n<b>User ID</b>: <code>%v</code>", fed.FedName, helpers.MentionHtml(user.Id, user.FirstName),
+		helpers.MentionHtml(member.Id, member.FirstName),
+		member.Id)
+	return err
+}
+
+func fedCheckBan(bot ext.Bot, u *gotgbot.Update) error {
+	user := u.EffectiveUser
+	msg := u.EffectiveMessage
+	chat := u.EffectiveChat
+
+	if chat_status.IsUserAdmin(chat, u.EffectiveUser.Id, nil) {
+		return gotgbot.ContinueGroups{}
+	}
+
+	if !chat_status.IsBotAdmin(chat, nil) {
+		return gotgbot.ContinueGroups{}
+	}
+
+	fed := sql.GetChatFed(strconv.Itoa(chat.Id))
+	member := sql.GetFbanUser(fed.FedId, strconv.Itoa(user.Id))
+
+	if member != nil {
+		_, err := msg.Delete()
+		error_handling.HandleErr(err)
+		_, err = bot.KickChatMember(chat.Id, user.Id)
+		error_handling.HandleErr(err)
+		_, err = bot.SendMessageHTML(chat.Id, fmt.Sprintf("User %v is banned in the current federation " +
+			"(%v), and so has been removed." +
+			"\n<b>Reason</b>: %v", helpers.MentionHtml(user.Id, user.FirstName), fed.FedName, member.Reason))
+		return err
+	}
+	return gotgbot.ContinueGroups{}
+}
+
 func LoadFeds(u *gotgbot.Updater) {
 	defer log.Println("Loading module feds")
 	u.Dispatcher.AddHandler(handlers.NewCommand("newfed", newFed))
@@ -120,4 +207,6 @@ func LoadFeds(u *gotgbot.Updater) {
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedinfo", fedInfo))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedadmins", fedAdmins))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fban", fedBan))
+	u.Dispatcher.AddHandler(handlers.NewArgsCommand("unfban", unfedban))
+	u.Dispatcher.AddHandler(handlers.NewMessage(Filters.All, fedCheckBan))
 }

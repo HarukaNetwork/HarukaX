@@ -5,9 +5,9 @@ import (
 )
 
 type Federations struct {
-	OwnerId string `sql:",pk"`
-	FedName string
-	FedId   string
+	OwnerId   string `sql:",pk"`
+	FedName   string
+	FedId     string
 	FedAdmins []string
 }
 
@@ -105,6 +105,15 @@ func IsUserFedAdmin(fedId string, userId string) string {
 		}
 	}
 	return ""
+}
+
+func GetChatFed(chatId string) *Federations {
+	chat := &ChatF{ChatId: chatId}
+	err := SESSION.Model(chat).WherePK().Select()
+	if err != nil {
+		return nil
+	}
+	return GetFedInfo(chat.FedId)
 }
 
 func ChatJoinFed(fedId string, chatId string) bool {
@@ -244,5 +253,5 @@ func SearchFedById(fedId string) *Federations {
 	if err != nil {
 		return nil
 	}
-		return fed
+	return fed
 }
