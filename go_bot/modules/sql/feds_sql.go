@@ -17,7 +17,7 @@ type ChatF struct {
 }
 
 type BansF struct {
-	FedId  string `sql:",pk"`
+	FedId  string `sql:",pk" pg:"fk:fed_id"`
 	UserId string `sql:",pk"`
 	Reason string
 }

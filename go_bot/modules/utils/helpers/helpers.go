@@ -35,18 +35,18 @@ func SplitMessage(msg string) []string {
 }
 
 func SplitQuotes(text string) []string {
-	SMART_OPEN := "“"
-	SMART_CLOSE := "”"
-	START_CHAR := []string{"'", `"`, SMART_OPEN}
+	smartOpen := "“"
+	smartClose := "”"
+	startChars := []string{"'", `"`, smartOpen}
 	broke := false
 
-	for _, char := range START_CHAR {
+	for _, char := range startChars {
 		if strings.HasPrefix(text, char) {
 			counter := 1
 			for counter < len(text) {
 				if text[counter] == '\\' {
 					counter++
-				} else if text[counter] == text[0] || (string(text[0]) == SMART_OPEN && string(text[counter]) == SMART_CLOSE) {
+				} else if text[counter] == text[0] || (string(text[0]) == smartOpen && string(text[counter]) == smartClose) {
 						broke = true
 						break
 				}
@@ -65,11 +65,10 @@ func SplitQuotes(text string) []string {
 			tmp := make([]string, 2)
 			tmp[0] = key
 			tmp[1] = rest
-		} else {
-			return strings.SplitN(text, " ", 2)
+			return tmp
 		}
 	}
-	return make([]string, 0)
+	return strings.SplitN(text, " ", 2)
 }
 
 func RemoveEscapes(text string) string {

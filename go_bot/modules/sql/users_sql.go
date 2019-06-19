@@ -32,11 +32,13 @@ type ChatMembers struct {
 }
 
 func EnsureBotInDb(u *gotgbot.Updater) {
+	// Create tables if they don't exist
 	models := []interface{}{&Users{}, &Chats{}, &ChatMembers{}, &Warns{}, &WarnFilters{}, &WarnSettings{}, &BlackListFilters{},
 		&Federations{}, &ChatF{}, &BansF{}}
 	for _, model := range models {
 		err := SESSION.CreateTable(model, &orm.CreateTableOptions{FKConstraints: true})
 		if err != nil {
+			// Log errors if they aren't related to already existing tables
 			if !strings.HasSuffix(err.Error(), "already exists") {
 				error_handling.HandleErr(err)
 			}
