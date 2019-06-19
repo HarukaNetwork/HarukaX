@@ -44,7 +44,7 @@ func fedInfo(_ ext.Bot, u *gotgbot.Update, args []string) error {
 			return err
 		}
 	} else {
-		fed = sql.GetFedFromUser(strconv.Itoa(user.Id))
+		fed = sql.GetFedFromOwnerId(strconv.Itoa(user.Id))
 		if fed == nil {
 			_, err := msg.ReplyText("You aren't the creator of any federations!")
 			return err
@@ -83,7 +83,7 @@ func fedAdmins(bot ext.Bot, u *gotgbot.Update, args []string) error {
 			return err
 		}
 	} else {
-		fed = sql.GetFedFromUser(strconv.Itoa(user.Id))
+		fed = sql.GetFedFromOwnerId(strconv.Itoa(user.Id))
 		fedId = fed.FedId
 		if fed == nil {
 			_, err := msg.ReplyText("You aren't the creator of any federations!")

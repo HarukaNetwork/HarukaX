@@ -5,20 +5,15 @@ import (
 )
 
 type Federations struct {
-	OwnerId   string `sql:",pk"`
+	OwnerId   string
 	FedName   string
-	FedId     string
+	FedId     string `sql:",pk"`
 	FedAdmins []string
 }
 
 type ChatF struct {
 	ChatId string `sql:",pk"`
-	FedId  string
-}
-
-type RulesF struct {
-	FedId string `sql:",pk"`
-	Rules string
+	FedId  string `pg:"fk:fed_id"`
 }
 
 type BansF struct {
@@ -28,7 +23,7 @@ type BansF struct {
 }
 
 func GetFedInfo(fedId string) *Federations {
-	fed := &Federations{}
+	fed := &Federations{FedId: fedId}
 	err := SESSION.Model(fed).Where("fed_id = ?", fedId).Select()
 	if err != nil {
 		if err.Error() != "pg: no rows in result set" {
@@ -37,16 +32,16 @@ func GetFedInfo(fedId string) *Federations {
 		return nil
 	}
 	return fed
-}
+} // No dirty reads
 
-func GetFedFromUser(userId string) *Federations {
-	fed := &Federations{OwnerId: userId}
-	err := SESSION.Model(fed).WherePK().Select()
+func GetFedFromOwnerId(ownerId string) *Federations {
+	fed := &Federations{OwnerId: ownerId}
+	err := SESSION.Model(fed).Where("owner_id = ?", ownerId).Select()
 	if err != nil {
 		return nil
 	}
 	return fed
-}
+} // No dirty reads
 
 func GetFedId(chatId string) string {
 	chat := &ChatF{}
@@ -55,18 +50,17 @@ func GetFedId(chatId string) string {
 		return ""
 	}
 	return chat.FedId
-}
+} // No dirty reads
 
-func NewFed(ownerId string, fedId string, fedName string) string {
+func NewFed(ownerId string, fedId string, fedName string) bool {
 	fed := &Federations{OwnerId: ownerId, FedId: fedId, FedName: fedName}
-	_, err := SESSION.Model(fed).OnConflict("(owner_id) DO UPDATE").Set("fed_name = EXCLUDED.fed_name").Insert()
+	_, err := SESSION.Model(fed).OnConflict("(fed_id) DO UPDATE").Set("fed_name = EXCLUDED.fed_name").Insert()
 	if err != nil {
-		return ""
+		error_handling.HandleErr(err)
+		return false
 	}
-	tmp := &Federations{OwnerId: ownerId}
-	err = SESSION.Model(tmp).WherePK().Select()
-	return tmp.FedId
-}
+	return true
+} // No dirty read
 
 func DelFed(fedId string) {
 	fed := &Federations{}
@@ -80,11 +74,7 @@ func DelFed(fedId string) {
 	bans := &BansF{}
 	_, err = SESSION.Model(bans).Where("fed_id = ?", fedId).Delete()
 	error_handling.HandleErr(err)
-
-	rules := &RulesF{}
-	_, err = SESSION.Model(rules).Where("fed_id = ?", fedId).Delete()
-	error_handling.HandleErr(err)
-}
+} // No dirty reads
 
 func SearchFedByName(fedName string) string {
 	feds := &Federations{}
@@ -112,22 +102,22 @@ func IsUserFedAdmin(fedId string, userId string) string {
 		}
 	}
 	return ""
-}
+} // Possible dirty read
 
 func GetChatFed(chatId string) *Federations {
 	chat := &ChatF{ChatId: chatId}
-	err := SESSION.Model(chat).WherePK().Select()
+	err := SESSION.Model(chat).Where("chat_id = ?", chatId).Select()
 	if err != nil {
 		return nil
 	}
 	return GetFedInfo(chat.FedId)
-}
+} // No dirty reads
 
 func ChatJoinFed(fedId string, chatId string) bool {
 	chat := &ChatF{FedId: fedId, ChatId: chatId}
 	_, err := SESSION.Model(chat).OnConflict("(chat_id) DO UPDATE").Set("fed_id = EXCLUDED.fed_id").Insert()
 	return err == nil
-}
+} // No dirty reads
 
 func UserDemoteFed(fedId string, userId string) {
 	federation := GetFedInfo(fedId)
@@ -140,20 +130,20 @@ func UserDemoteFed(fedId string, userId string) {
 
 	_, err := SESSION.Model(federation).OnConflict("(owner_id) DO UPDATE").Set("fed_admins = EXCLUDED.fed_admins").Insert()
 	error_handling.HandleErr(err)
-}
+} // possible dirty read, solution?
 
 func UserPromoteFed(fedId string, userId string) {
 	fed := GetFedInfo(fedId)
 	fed.FedAdmins = append(fed.FedAdmins, userId)
 	_, err := SESSION.Model(fed).OnConflict("(owner_id) DO UPDATE").Set("fed_admins = EXCLUDED.fed_admins").Insert()
 	error_handling.HandleErr(err)
-}
+} // possible dirty read
 
 func ChatLeaveFed(chatId string) bool {
 	chat := &ChatF{}
 	_, err := SESSION.Model(chat).Where("chat_id = ?", chatId).Delete()
 	return err == nil
-}
+} // no dirty read
 
 func AllFedChats(fedId string) []string {
 	var chats []ChatF
@@ -164,39 +154,19 @@ func AllFedChats(fedId string) []string {
 		tmp = append(tmp, chat.ChatId)
 	}
 	return tmp
-}
-
-func SetFrules(fedId string, rules string) *RulesF {
-	rule := &RulesF{FedId: fedId, Rules: rules}
-	_, err := SESSION.Model(rule).OnConflict("(fed_id) DO UPDATE").Set("rules = EXCLUDED.rules").Insert()
-	if err != nil {
-		return nil
-	} else {
-		return rule
-	}
-}
-
-func GetFrules(fedId string) *RulesF {
-	rules := &RulesF{FedId: fedId}
-	err := SESSION.Model(rules).WherePK().Select()
-	if err != nil {
-		return nil
-	} else {
-		return rules
-	}
-}
+} // no dirty read
 
 func FbanUser(fedId string, userId string, reason string) {
 	ban := &BansF{FedId: fedId, UserId: userId, Reason: reason}
 	_, err := SESSION.Model(ban).OnConflict("(fed_id,user_id) DO UPDATE").Set("reason = EXCLUDED.reason").Insert()
 	error_handling.HandleErr(err)
-}
+} // no dirty read
 
 func UnFbanUser(fedId string, userId string) {
 	ban := &BansF{FedId: fedId, UserId: userId}
 	_, err := SESSION.Model(ban).WherePK().Delete()
 	error_handling.HandleErr(err)
-}
+} // no dirty read
 
 func GetFbanUser(fedId string, userId string) *BansF {
 	ban := &BansF{FedId: fedId, UserId: userId}
@@ -206,7 +176,7 @@ func GetFbanUser(fedId string, userId string) *BansF {
 	} else {
 		return ban
 	}
-}
+} // no dirty read
 
 func GetAllFbanUsers(fedId string) []BansF {
 	var bans []BansF
@@ -215,9 +185,8 @@ func GetAllFbanUsers(fedId string) []BansF {
 		error_handling.HandleErr(err)
 		return make([]BansF, 0)
 	}
-
 	return bans
-}
+} // no dirty read
 
 func GetAllFbanUsersGlobal() []string {
 	var bans []BansF
@@ -250,15 +219,6 @@ func GetAllFedsAdminsGlobal() []string {
 }
 
 func IsUserFedOwner(userId string, fedId string) bool {
-	fed := SearchFedById(fedId)
+	fed := GetFedInfo(fedId)
 	return fed.OwnerId == userId
-}
-
-func SearchFedById(fedId string) *Federations {
-	fed := &Federations{FedId: fedId}
-	err := SESSION.Model(fed).Where("fed_id = ?", fedId).Select()
-	if err != nil {
-		return nil
-	}
-	return fed
 }

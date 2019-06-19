@@ -15,6 +15,7 @@ import (
 func newFed(_ ext.Bot, u *gotgbot.Update) error {
 	user := u.EffectiveUser
 	msg := u.EffectiveMessage
+	var fedId string
 
 	splitText := strings.SplitN(msg.Text, " ", 2)
 	if len(splitText) < 2 {
@@ -24,10 +25,16 @@ func newFed(_ ext.Bot, u *gotgbot.Update) error {
 
 	fedName := splitText[1]
 
-	fedId := uuid.New().String()
+	existingFed := sql.GetFedFromOwnerId(strconv.Itoa(user.Id))
+
+	if existingFed != nil {
+		fedId = existingFed.FedId
+	} else {
+		fedId = uuid.New().String()
+	}
 
 	fed := sql.NewFed(strconv.Itoa(user.Id), fedId, fedName)
-	if fed == "" {
+	if !fed {
 		_, err := msg.ReplyText("Big F! Couldn't create a new federation.")
 		return err
 	}
@@ -35,7 +42,7 @@ func newFed(_ ext.Bot, u *gotgbot.Update) error {
 		"\nName: <code>%v</code>"+
 		"\nID: <code>%v</code>"+
 		"\nUse the following command to join the federation:"+
-		"\n<code>/joinfed %v</code>", fedName, fed, fed)
+		"\n<code>/joinfed %v</code>", fedName, fedId, fedId)
 	return err
 }
 
@@ -48,7 +55,7 @@ func delFed(_ ext.Bot, u *gotgbot.Update) error {
 		return err
 	}
 
-	fed := sql.GetFedFromUser(strconv.Itoa(user.Id))
+	fed := sql.GetFedFromOwnerId(strconv.Itoa(user.Id))
 
 	if fed == nil {
 		_, err := msg.ReplyText("You aren't the creator of any federations!")
@@ -136,7 +143,7 @@ func fedPromote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	member, err := bot.GetChat(uId)
 	error_handling.HandleErr(err)
 
-	fed := sql.GetFedFromUser(strconv.Itoa(user.Id))
+	fed := sql.GetFedFromOwnerId(strconv.Itoa(user.Id))
 	if fed == nil {
 		_, err := msg.ReplyText("You aren't the creator of any federations.")
 		return err
@@ -177,7 +184,7 @@ func fedDemote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	member, err := bot.GetChat(uId)
 	error_handling.HandleErr(err)
 
-	fed := sql.GetFedFromUser(strconv.Itoa(user.Id))
+	fed := sql.GetFedFromOwnerId(strconv.Itoa(user.Id))
 	if fed == nil {
 		_, err := msg.ReplyText("You aren't the creator of any federations.")
 		return err
