@@ -202,11 +202,22 @@ func LoadFeds(u *gotgbot.Updater) {
 	u.Dispatcher.AddHandler(handlers.NewCommand("chatfed", chatFed))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("joinfed", joinFed))
 	u.Dispatcher.AddHandler(handlers.NewCommand("leavefed", leaveFed))
+
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedpromote", fedPromote))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("feddemote", fedDemote))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedinfo", fedInfo))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedadmins", fedAdmins))
+	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedban", fedBan))
+	u.Dispatcher.AddHandler(handlers.NewArgsCommand("unfedban", unfedban))
+
+	// Shorter aliases
+	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fpromote", fedPromote))
+	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fdemote", fedDemote))
+	u.Dispatcher.AddHandler(handlers.NewArgsCommand("finfo", fedInfo))
+	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fadmins", fedAdmins))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fban", fedBan))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("unfban", unfedban))
+
+
 	u.Dispatcher.AddHandler(handlers.NewMessage(Filters.All, fedCheckBan))
 }
