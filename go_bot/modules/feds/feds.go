@@ -273,6 +273,42 @@ func fedInfo(_ ext.Bot, u *gotgbot.Update, args []string) error {
 	return err
 }
 
+func fedAdmins(bot ext.Bot, u *gotgbot.Update, args []string) error {
+	user := u.EffectiveUser
+	msg := u.EffectiveMessage
+	var fedId string
+	var fed *sql.Federations
+	if len(args) >= 1 {
+		fedId = args[0]
+		fed = sql.GetFedInfo(fedId)
+		if fed == nil {
+			_, err := msg.ReplyText("Please use a valid federation ID.")
+			return err
+		}
+	} else {
+		fed = sql.GetFedFromUser(strconv.Itoa(user.Id))
+		fedId = fed.FedId
+		if fed == nil {
+			_, err := msg.ReplyText("You aren't the creator of any federations!")
+			return err
+		}
+	}
+
+	ownerId, _ := strconv.Atoi(fed.OwnerId)
+	owner, _ := bot.GetChat(ownerId)
+
+	text := "Admins in this federation:"
+	text += fmt.Sprintf("\n - %v (<code>%v</code>)", helpers.MentionHtml(ownerId, owner.FirstName), ownerId)
+	for _, users := range sql.AllFedAdmins(fedId) {
+		userId, _ := strconv.Atoi(users.UserId)
+		user, _ := bot.GetChat(userId)
+		text += fmt.Sprintf("\n - %v (<code>%v</code>)", helpers.MentionHtml(user.Id, user.FirstName), user.Id)
+	}
+
+	_, err := msg.ReplyHTML(text)
+	return err
+}
+
 func LoadFeds(u *gotgbot.Updater) {
 	defer log.Println("Loading module feds")
 	u.Dispatcher.AddHandler(handlers.NewCommand("newfed", newFed))
@@ -283,4 +319,5 @@ func LoadFeds(u *gotgbot.Updater) {
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedpromote", fedPromote))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("feddemote", fedDemote))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedinfo", fedInfo))
+	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedadmins", fedAdmins))
 }
