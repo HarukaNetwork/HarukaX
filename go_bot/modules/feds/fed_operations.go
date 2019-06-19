@@ -81,7 +81,7 @@ func joinFed(_ ext.Bot, u *gotgbot.Update, args []string) error {
 
 	if len(args) >= 1 {
 		toJoinId := args[0]
-		fed := sql.SearchFedById(toJoinId)
+		fed := sql.GetFedInfo(toJoinId)
 		if fed == nil {
 			_, err := msg.ReplyText("Please enter a valid federation ID!")
 			return err

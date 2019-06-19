@@ -218,6 +218,5 @@ func LoadFeds(u *gotgbot.Updater) {
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fban", fedBan))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("unfban", unfedban))
 
-
 	u.Dispatcher.AddHandler(handlers.NewMessage(Filters.All, fedCheckBan))
 }

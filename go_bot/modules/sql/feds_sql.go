@@ -31,6 +31,9 @@ func GetFedInfo(fedId string) *Federations {
 	fed := &Federations{}
 	err := SESSION.Model(fed).Where("fed_id = ?", fedId).Select()
 	if err != nil {
+		if err.Error() != "pg: no rows in result set" {
+			error_handling.HandleErr(err)
+		}
 		return nil
 	}
 	return fed
