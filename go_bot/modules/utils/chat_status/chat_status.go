@@ -63,7 +63,7 @@ func IsBotAdmin(chat *ext.Chat, member *ext.ChatMember) bool {
 
 func RequireBotAdmin(chat *ext.Chat, msg *ext.Message) bool {
 	if !IsBotAdmin(chat, nil) {
-		_, err := msg.ReplyText("You must be an admin to perform this action.")
+		_, err := msg.ReplyText("I'm not admin!")
 		error_handling.HandleErr(err)
 		return false
 	}

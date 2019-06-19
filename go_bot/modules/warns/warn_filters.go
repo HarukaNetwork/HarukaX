@@ -128,7 +128,7 @@ func replyFilter(_ ext.Bot, u *gotgbot.Update) error {
 	chat := u.EffectiveChat
 	message := u.EffectiveMessage
 
-	if !chat_status.RequireBotAdmin(chat, message) {
+	if !chat_status.IsBotAdmin(chat, nil) {
 		return gotgbot.EndGroups{}
 	}
 

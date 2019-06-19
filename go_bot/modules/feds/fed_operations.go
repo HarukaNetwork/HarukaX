@@ -157,12 +157,7 @@ func fedPromote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		return err
 	}
 
-	res := sql.UserPromoteFed(fed.FedId, userId)
-
-	if res == nil {
-		_, err := msg.ReplyText("Well damn, I can't seem to promote that user.")
-		return err
-	}
+	go sql.UserPromoteFed(fed.FedId, userId)
 
 	_, err = msg.ReplyHTMLf("User %v is now an admin of <b>%v</b> (<code>%v</code>)", helpers.MentionHtml(uId, member.FirstName), fed.FedName, fed.FedId)
 	return err
@@ -198,12 +193,7 @@ func fedDemote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		return err
 	}
 
-	res := sql.UserDemoteFed(fed.FedId, userId)
-
-	if !res {
-		_, err := msg.ReplyText("Well damn, I can't seem to demote that user.")
-		return err
-	}
+	go sql.UserDemoteFed(fed.FedId, userId)
 
 	_, err = msg.ReplyHTMLf("User %v is no longer an admin of <b>%v</b> (<code>%v</code>)", helpers.MentionHtml(uId, member.FirstName), fed.FedName, fed.FedId)
 	return err
