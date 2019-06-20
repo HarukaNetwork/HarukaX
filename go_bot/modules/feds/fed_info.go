@@ -50,7 +50,6 @@ func fedInfo(_ ext.Bot, u *gotgbot.Update, args []string) error {
 			return err
 		}
 		fedId = fed.FedId
-
 	}
 
 	ownerId, _ := strconv.Atoi(fed.OwnerId)
@@ -62,7 +61,7 @@ func fedInfo(_ ext.Bot, u *gotgbot.Update, args []string) error {
 		"\nNumber of admins: <code>%v</code>" +
 		"\nNumber of bans: <code>%v</code>" +
 		"\nNumber of connected chats: <code>%v</code>", fed.FedId, fed.FedName, helpers.MentionHtml(ownerId, "this person"),
-		len(fed.FedAdmins) + 1,
+		len(sql.GetFedAdmins(fedId)) + 1,
 		len(sql.GetAllFbanUsers(fedId)),
 		len(sql.AllFedChats(fedId)))
 
@@ -96,8 +95,8 @@ func fedAdmins(bot ext.Bot, u *gotgbot.Update, args []string) error {
 
 	text := "Admins in this federation:"
 	text += fmt.Sprintf("\n - %v (<code>%v</code>)", helpers.MentionHtml(ownerId, owner.FirstName), ownerId)
-	for _, users := range fed.FedAdmins {
-		userId, _ := strconv.Atoi(users)
+	for _, users := range sql.GetFedAdmins(fedId) {
+		userId, _ := strconv.Atoi(users.UserId)
 		user, _ := bot.GetChat(userId)
 		text += fmt.Sprintf("\n - %v (<code>%v</code>)", helpers.MentionHtml(user.Id, user.FirstName), user.Id)
 	}

@@ -190,6 +190,10 @@ func fedCheckBan(bot ext.Bot, u *gotgbot.Update) error {
 	}
 
 	fed := sql.GetChatFed(strconv.Itoa(chat.Id))
+
+	if fed == nil {
+		return gotgbot.ContinueGroups{}
+	}
 	member := sql.GetFbanUser(fed.FedId, strconv.Itoa(user.Id))
 
 	if member != nil {
