@@ -84,6 +84,12 @@ func DelFed(fedId string) {
 } // No dirty reads
 
 func IsUserFedAdmin(fedId string, userId string) string {
+	fed := GetFedInfo(fedId)
+
+	if fed.OwnerId == userId {
+		return fed.OwnerId
+	}
+
 	admin := &FedAdmins{FedId: fedId, UserId: userId}
 	err := SESSION.Select(admin)
 	if err != nil {
