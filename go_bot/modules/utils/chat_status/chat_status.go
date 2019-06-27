@@ -52,7 +52,11 @@ func IsBotAdmin(chat *ext.Chat, member *ext.ChatMember) bool {
 	if member == nil {
 		mem, err := chat.GetMember(chat.Bot.Id)
 		error_handling.HandleErr(err)
+		if mem == nil {
+			return false
+		}
 		member = mem
+
 	}
 	if member.Status == "administrator" || member.Status == "creator" {
 		return true

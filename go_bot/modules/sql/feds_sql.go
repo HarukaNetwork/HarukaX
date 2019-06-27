@@ -4,62 +4,59 @@ import (
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 )
 
-type Federations struct {
+type Federation struct {
+	Id      string `gorm:"primary_key"`
 	OwnerId string
 	FedName string
-	FedId   string `sql:",pk"`
+	//FedAdmins []FedAdmin `gorm:"foreignkey:Id"`
+	//FedChats []FedChat `gorm:"foreignkey:Id"`
+	//FedBans []FedBan `gorm:"foreignkey:Id"`
 }
 
-type FedAdmins struct {
-	FedId  string `sql:",pk" pg:"fk:fed_id"`
-	UserId string `sql:",pk"`
+type FedAdmin struct {
+	FedId  string `gorm:"primary_key"`
+	UserId string `gorm:"primary_key"`
 }
 
-type FedChats struct {
-	ChatId string `sql:",pk"`
-	FedId  string `pg:"fk:fed_id"`
+type FedChat struct {
+	ChatId string `gorm:"primary_key"`
+	FedId  string
 }
 
-type FedBans struct {
-	FedId  string `sql:",pk" pg:"fk:fed_id"`
-	UserId string `sql:",pk"`
+type FedBan struct {
+	FedRef string `gorm:"primary_key"`
+	UserId string `gorm:"primary_key"`
 	Reason string
 }
 
-func GetFedInfo(fedId string) *Federations {
-	fed := &Federations{FedId: fedId}
-	err := SESSION.Model(fed).Where("fed_id = ?", fedId).Select()
-	if err != nil {
-		if err.Error() != "pg: no rows in result set" {
-			error_handling.HandleErr(err)
-		}
+func GetFedInfo(fedId string) *Federation {
+	fed := &Federation{Id: fedId}
+	if SESSION.First(fed).RowsAffected == 0 {
 		return nil
 	}
 	return fed
 } // No dirty reads
 
-func GetFedFromOwnerId(ownerId string) *Federations {
-	fed := &Federations{OwnerId: ownerId}
-	err := SESSION.Model(fed).Where("owner_id = ?", ownerId).Select()
-	if err != nil {
+func GetFedFromOwnerId(ownerId string) *Federation {
+	fed := &Federation{OwnerId: ownerId}
+	if SESSION.Where("owner_id = ?", ownerId).First(fed).RowsAffected == 0 {
 		return nil
 	}
 	return fed
 } // No dirty reads
 
 func GetFedId(chatId string) string {
-	chat := &FedChats{}
-	err := SESSION.Model(chat).Where("chat_id = ?", chatId).Select()
-	if err != nil {
+	chat := &FedChat{}
+	if SESSION.Where("chat_id = ?", chatId).First(chat).RowsAffected == 0 {
 		return ""
 	}
 	return chat.FedId
 } // No dirty reads
 
 func NewFed(ownerId string, fedId string, fedName string) bool {
-	fed := &Federations{OwnerId: ownerId, FedId: fedId, FedName: fedName}
-	_, err := SESSION.Model(fed).OnConflict("(fed_id) DO UPDATE").Set("fed_name = EXCLUDED.fed_name").Insert()
-	if err != nil {
+	fed := &Federation{OwnerId: ownerId, Id: fedId, FedName: fedName}
+
+	if err := SESSION.Save(fed).Error; err != nil {
 		error_handling.HandleErr(err)
 		return false
 	}
@@ -67,20 +64,17 @@ func NewFed(ownerId string, fedId string, fedName string) bool {
 } // No dirty read
 
 func DelFed(fedId string) {
-	fed := &Federations{}
-	_, err := SESSION.Model(fed).Where("fed_id = ?", fedId).Delete()
-	error_handling.HandleErr(err)
+	fed := &Federation{}
+	SESSION.Where("fed_id = ?", fedId).Delete(fed)
 
-	chat := &FedChats{}
-	_, err = SESSION.Model(chat).Where("fed_id = ?", fedId).Delete()
-	error_handling.HandleErr(err)
+	chat := &FedChat{}
+	SESSION.Model(chat).Where("fed_id = ?", fedId).Delete(chat)
 
-	var admins []FedAdmins
-	_, err = SESSION.Model(&admins).Where("fed_id = ?", fedId).Delete()
+	admins := &FedAdmin{}
+	SESSION.Model(&admins).Where("fed_id = ?", fedId).Delete(admins)
 
-	bans := &FedBans{}
-	_, err = SESSION.Model(bans).Where("fed_id = ?", fedId).Delete()
-	error_handling.HandleErr(err)
+	bans := &FedBan{}
+	SESSION.Model(bans).Where("fed_id = ?", fedId).Delete(bans)
 } // No dirty reads
 
 func IsUserFedAdmin(fedId string, userId string) string {
@@ -90,59 +84,45 @@ func IsUserFedAdmin(fedId string, userId string) string {
 		return fed.OwnerId
 	}
 
-	admin := &FedAdmins{FedId: fedId, UserId: userId}
-	err := SESSION.Select(admin)
-	if err != nil {
-		if err.Error() != "pg: no rows in result set" {
-			error_handling.HandleErr(err)
-		}
+	admin := &FedAdmin{FedId: fedId, UserId: userId}
+
+	if SESSION.First(admin).RowsAffected == 0 {
 		return ""
 	} else {
 		return admin.UserId
 	}
 } // No dirty reads
 
-func GetChatFed(chatId string) *Federations {
-	chat := &FedChats{ChatId: chatId}
-	err := SESSION.Model(chat).Where("chat_id = ?", chatId).Select()
-	if err != nil {
-		return nil
-	}
+func GetChatFed(chatId string) *Federation {
+	chat := &FedChat{ChatId: chatId}
+	SESSION.Where("chat_id = ?", chatId).First(chat)
 	return GetFedInfo(chat.FedId)
 } // No dirty reads
 
 func ChatJoinFed(fedId string, chatId string) bool {
-	chat := &FedChats{FedId: fedId, ChatId: chatId}
-	_, err := SESSION.Model(chat).OnConflict("(chat_id) DO UPDATE").Set("fed_id = EXCLUDED.fed_id").Insert()
-	return err == nil
+	chat := &FedChat{FedId: fedId, ChatId: chatId}
+	return SESSION.Save(chat).Error == nil
 } // No dirty reads
 
 func UserPromoteFed(fedId string, userId string) {
-	admin := &FedAdmins{FedId: fedId, UserId: userId}
-	err := SESSION.Insert(admin)
-	error_handling.HandleErr(err)
+	admin := &FedAdmin{FedId: fedId, UserId: userId}
+	SESSION.Save(admin)
 } //no dirty read
 
 func UserDemoteFed(fedId string, userId string) {
-	admin := &FedAdmins{FedId: fedId, UserId: userId}
-	err := SESSION.Delete(admin)
-	error_handling.HandleErr(err)
+	admin := &FedAdmin{FedId: fedId, UserId: userId}
+	SESSION.Delete(admin)
 } // no dirty read
 
 func ChatLeaveFed(chatId string) bool {
-	chat := &FedChats{}
-	_, err := SESSION.Model(chat).Where("chat_id = ?", chatId).Delete()
-	return err == nil
+	chat := &FedChat{}
+	return SESSION.Where("chat_id = ?", chatId).Delete(chat).RowsAffected != 0
+
 } // no dirty read
 
 func AllFedChats(fedId string) []string {
-	var chats []FedChats
-	err := SESSION.Model(&chats).Where("fed_id = ?", fedId).Select()
-	if err != nil {
-		if err.Error() != "pg: no rows in result set" {
-			error_handling.HandleErr(err)
-		}
-	}
+	var chats []FedChat
+	SESSION.Where("fed_id = ?", fedId).Find(&chats)
 	tmp := make([]string, 0)
 	for _, chat := range chats {
 		tmp = append(tmp, chat.ChatId)
@@ -151,70 +131,47 @@ func AllFedChats(fedId string) []string {
 } // no dirty read
 
 func FbanUser(fedId string, userId string, reason string) {
-	ban := &FedBans{FedId: fedId, UserId: userId, Reason: reason}
-	_, err := SESSION.Model(ban).OnConflict("(fed_id,user_id) DO UPDATE").Set("reason = EXCLUDED.reason").Insert()
-	error_handling.HandleErr(err)
+	ban := &FedBan{FedRef: fedId, UserId: userId, Reason: reason}
+	SESSION.Save(ban)
 } // no dirty read
 
 func UnFbanUser(fedId string, userId string) {
-	ban := &FedBans{FedId: fedId, UserId: userId}
-	_, err := SESSION.Model(ban).WherePK().Delete()
-	error_handling.HandleErr(err)
+	ban := &FedBan{FedRef: fedId, UserId: userId}
+	SESSION.Delete(ban)
 } // no dirty read
 
-func GetFbanUser(fedId string, userId string) *FedBans {
-	ban := &FedBans{FedId: fedId, UserId: userId}
-	err := SESSION.Model(ban).WherePK().Select()
-	if err != nil {
-		if err.Error() != "pg: no rows in result set" {
-			error_handling.HandleErr(err)
-		}
+func GetFbanUser(fedId string, userId string) *FedBan {
+	ban := &FedBan{FedRef: fedId, UserId: userId}
+	if SESSION.First(ban).RowsAffected == 0 {
 		return nil
-	} else {
-		return ban
 	}
+	return ban
 } // no dirty read
 
-func GetAllFbanUsers(fedId string) []FedBans {
-	var bans []FedBans
-	err := SESSION.Model(&bans).Where("fed_id = ?", fedId).Select()
-	if err != nil {
-		if err.Error() != "pg: no rows in result set" {
-			error_handling.HandleErr(err)
-		}
-		return make([]FedBans, 0)
-	}
+func GetAllFbanUsers(fedId string) []FedBan {
+	var bans []FedBan
+	SESSION.Where("fed_id = ?", fedId).Find(&bans)
 	return bans
 } // no dirty read
 
-func GetAllFbanUsersGlobal() []string {
-	var bans []FedBans
-	err := SESSION.Model(&bans).Select()
-	if err != nil {
-		error_handling.HandleErr(err)
-		return make([]string, 0)
-	}
-
-	tmp := make([]string, len(bans))
-	for i, ban := range bans {
-		tmp[i] = ban.UserId
-	}
-	return tmp
+func GetUserFbans(userId string) []Federation {
+	var feds []Federation
+	SESSION.Table("federations").Select("federations.id, federations.fed_name").
+		Joins("left join fed_bans on fed_bans.fed_ref = federations.id").
+		Where("fed_bans.user_id = ?", userId).Find(&feds)
+	return feds
 }
 
-func GetAllFedsAdminsGlobal() []string {
-	var feds []Federations
-	err := SESSION.Model(&feds).Select()
-	if err != nil {
-		error_handling.HandleErr(err)
-		return make([]string, 0)
-	}
+func GetAllFbanUsersGlobal() []FedBan {
+	var bans []FedBan
+	SESSION.Find(&bans)
+	return bans
+}
 
-	tmp := make([]string, len(feds))
-	for i, fed := range feds {
-		tmp[i] = fed.FedId
-	}
-	return tmp
+func GetAllFedsAdminsGlobal() []FedAdmin {
+	var feds []FedAdmin
+	SESSION.Find(&feds)
+	return feds
 }
 
 func IsUserFedOwner(userId string, fedId string) bool {
@@ -222,15 +179,8 @@ func IsUserFedOwner(userId string, fedId string) bool {
 	return fed.OwnerId == userId
 }
 
-func GetFedAdmins(fedId string) []FedAdmins {
-	var admins []FedAdmins
-	err := SESSION.Model(&admins).Where("fed_id = ?", fedId).Select()
-	if err != nil {
-		if err.Error() != "pg: no rows in result set" {
-			error_handling.HandleErr(err)
-		}
-		return make([]FedAdmins, 0)
-	} else {
-		return admins
-	}
+func GetFedAdmins(fedId string) []FedAdmin {
+	var admins []FedAdmin
+	SESSION.Where("fed_id = ?", fedId).Find(&admins)
+	return admins
 }

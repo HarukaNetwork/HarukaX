@@ -171,7 +171,7 @@ func warns(_ ext.Bot, u *gotgbot.Update, args []string) error {
 
 	if numWarns != 0 {
 		limit, _ := sql.GetWarnSetting(strconv.Itoa(chat.Id))
-		if reasons != nil {
+		if len(reasons) > 0 {
 			text = fmt.Sprintf("This user has %v/%v warnings, for the following reasons:", numWarns, limit)
 			for _, reason := range reasons {
 				text += fmt.Sprintf("\n - %v", reason)

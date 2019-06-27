@@ -2,24 +2,25 @@ package sql
 
 import (
 	"fmt"
-	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
+	"github.com/lib/pq"
 )
 
 type Warns struct {
-	UserId   string `sql:",pk"`
-	ChatId   string `sql:",pk"`
-	NumWarns int    `sql:",default:0"`
-	Reasons  []string
+	UserId   string         `gorm:"primary_key"`
+	ChatId   string         `gorm:"primary_key"`
+	NumWarns int            `gorm:"default:0"`
+	Reasons  pq.StringArray `gorm:"type:varchar(64)[]"`
 }
+
 
 func (w Warns) String() string {
 	return fmt.Sprintf("<%v warns for %s in %s for reasons %v>", w.NumWarns, w.UserId, w.ChatId, w.Reasons)
 }
 
 type WarnFilters struct {
-	ChatId  string `sql:",pk"`
-	Keyword string `sql:",pk"`
-	Reply   string `sql:",notnull"`
+	ChatId  string `gorm:"primary_key"`
+	Keyword string `gorm:"primary_key"`
+	Reply   string `gorm:"not null"`
 }
 
 func (wf WarnFilters) String() string {
@@ -27,39 +28,41 @@ func (wf WarnFilters) String() string {
 }
 
 type WarnSettings struct {
-	ChatId    string `sql:",pk"`
-	WarnLimit int    `sql:",default:3"`
-	SoftWarn  bool   `sql:",default:false"`
+	ChatId    string `gorm:"primary_key"`
+	WarnLimit int    `gorm:"default:3"`
+	SoftWarn  bool   `gorm:"default:false"`
 }
 
 func WarnUser(userId string, chatId string, reason string) (int, []string) {
 	warnedUser := &Warns{UserId: userId, ChatId: chatId}
-	_ = SESSION.Select(warnedUser)
+	SESSION.FirstOrInit(warnedUser)
+
+	// Increment warns
 	warnedUser.NumWarns++
+
+	// Add reason if it exists
 	if reason != "" {
+		if len(reason) >= 64 {
+			reason = reason[:63]
+		}
 		warnedUser.Reasons = append(warnedUser.Reasons, reason)
 	}
-	reasons := warnedUser.Reasons
-	num := warnedUser.NumWarns
-	_, err := SESSION.Model(warnedUser).
-		OnConflict("(user_id,chat_id) DO UPDATE").
-		Set("num_warns = EXCLUDED.num_warns").
-		Set("reasons = EXCLUDED.reasons").
-		Insert()
-	error_handling.HandleErr(err)
 
-	return num, reasons
+	// Upsert warn
+	SESSION.Save(warnedUser)
+
+	return warnedUser.NumWarns, warnedUser.Reasons
 }
 
 func RemoveWarn(userId string, chatId string) bool {
 	removed := false
 	warnedUser := &Warns{UserId: userId, ChatId: chatId}
-	err := SESSION.Select(warnedUser)
+	SESSION.FirstOrInit(warnedUser)
 
-	if err == nil && warnedUser.NumWarns > 0 {
+	// only remove if user has warns
+	if warnedUser.NumWarns > 0 {
 		warnedUser.NumWarns -= 1
-		err := SESSION.Update(warnedUser)
-		error_handling.HandleErr(err)
+		SESSION.Save(warnedUser)
 		removed = true
 	}
 
@@ -68,93 +71,71 @@ func RemoveWarn(userId string, chatId string) bool {
 
 func ResetWarns(userId string, chatId string) {
 	warnedUser := &Warns{UserId: userId, ChatId: chatId}
-	err := SESSION.Select(warnedUser)
+	SESSION.FirstOrInit(warnedUser)
 
-	if err != nil {
-		return
-	}
-
+	// resetting all warn fields
 	warnedUser.NumWarns = 0
 	warnedUser.Reasons = make([]string, 0)
-	err = SESSION.Update(warnedUser)
-	error_handling.HandleErr(err)
+	SESSION.Save(warnedUser)
 }
 
 func GetWarns(userId string, chatId string) (int, []string) {
 	user := &Warns{UserId: userId, ChatId: chatId}
-	err := SESSION.Select(user)
-	if err != nil {
-		return 0, nil
-	}
+	SESSION.FirstOrInit(user)
 	return user.NumWarns, user.Reasons
 }
 
 func AddWarnFilter(chatId string, keyword string, reply string) {
 	warnFilter := &WarnFilters{ChatId: chatId, Keyword: keyword, Reply: reply}
-	_, err := SESSION.Model(warnFilter).
-		OnConflict("(chat_id,keyword) DO UPDATE").
-		Set("reply = EXCLUDED.reply").
-		Insert()
-	error_handling.HandleErr(err)
+	SESSION.Save(warnFilter)
 }
 
 func RemoveWarnFilter(chatId string, keyword string) bool {
 	warnFilter := &WarnFilters{ChatId: chatId, Keyword: keyword}
-	err := SESSION.Select(warnFilter)
-	if err == nil {
-		err := SESSION.Delete(warnFilter)
-		error_handling.HandleErr(err)
-		return true
+	// return false if 0 rows were deleted
+	if SESSION.Delete(warnFilter).RowsAffected == 0 {
+		return false
 	}
 	return false
 }
 
 func GetChatWarnTriggers(chatId string) []WarnFilters {
-	var warnFilters []WarnFilters = nil
-	err := SESSION.Model(&warnFilters).Where("chat_id = ?", chatId).Select()
-	if err != nil {
-		error_handling.HandleErr(err)
+	var warnFilters []WarnFilters
+	SESSION.Where("chat_id = ?", chatId).Find(&warnFilters)
+	if len(warnFilters) == 0 {
 		return nil
-	} else {
-		return warnFilters
 	}
+	return warnFilters
 }
 
 func GetWarnFilter(chatId string, keyword string) *WarnFilters {
 	warnFilter := &WarnFilters{ChatId: chatId, Keyword: keyword}
-	err := SESSION.Select(warnFilter)
-
-	if err != nil {
+	if SESSION.First(warnFilter).RowsAffected == 0 {
 		return nil
-	} else {
-		return warnFilter
 	}
+	return warnFilter
 }
 
 func SetWarnLimit(chatId string, warnLimit int) {
-	warnSetting := &WarnSettings{ChatId: chatId, WarnLimit: warnLimit}
-	_, err := SESSION.Model(warnSetting).
-		OnConflict("(chat_id) DO UPDATE").
-		Set("warn_limit = EXCLUDED.warn_limit").
-		Insert()
-	error_handling.HandleErr(err)
+	warnSetting := &WarnSettings{ChatId: chatId}
+	// init record if it doesn't exist
+	SESSION.FirstOrInit(warnSetting)
+	warnSetting.WarnLimit = warnLimit
+	// upsert record
+	SESSION.Save(warnSetting)
 }
 
 func SetWarnStrength(chatId string, softWarn bool) {
 	warnSetting := &WarnSettings{ChatId: chatId, SoftWarn: softWarn}
-	_, err := SESSION.Model(warnSetting).
-		OnConflict("(chat_id) DO UPDATE").
-		Set("soft_warn = EXCLUDED.soft_warn").
-		Insert()
-	error_handling.HandleErr(err)
+	// init record if it doesn't exist
+	SESSION.FirstOrInit(warnSetting)
+	warnSetting.SoftWarn = softWarn
+	// upsert record
+	SESSION.Save(warnSetting)
 }
 
 func GetWarnSetting(chatId string) (int, bool) {
 	warnSetting := &WarnSettings{ChatId: chatId}
-	err := SESSION.Select(warnSetting)
-	if err != nil {
-		return 3, false
-	} else {
-		return warnSetting.WarnLimit, warnSetting.SoftWarn
-	}
+	SESSION.FirstOrCreate(warnSetting)
+	return warnSetting.WarnLimit, warnSetting.SoftWarn
 }

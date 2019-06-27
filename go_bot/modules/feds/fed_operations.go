@@ -28,7 +28,7 @@ func newFed(_ ext.Bot, u *gotgbot.Update) error {
 	existingFed := sql.GetFedFromOwnerId(strconv.Itoa(user.Id))
 
 	if existingFed != nil {
-		fedId = existingFed.FedId
+		fedId = existingFed.Id
 	} else {
 		fedId = uuid.New().String()
 	}
@@ -62,7 +62,7 @@ func delFed(_ ext.Bot, u *gotgbot.Update) error {
 		return err
 	}
 
-	go sql.DelFed(fed.FedId)
+	go sql.DelFed(fed.Id)
 	_, err := msg.ReplyHTMLf("Federation <b>%v</b> has been deleted!", fed.FedName)
 	return err
 }
@@ -154,7 +154,7 @@ func fedPromote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		return err
 	}
 
-	if sql.IsUserFedAdmin(fed.FedId, userId) != "" {
+	if sql.IsUserFedAdmin(fed.Id, userId) != "" {
 		_, err := msg.ReplyText("This user is already a federation admin in your federation.")
 		return err
 	}
@@ -164,9 +164,9 @@ func fedPromote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		return err
 	}
 
-	go sql.UserPromoteFed(fed.FedId, userId)
+	go sql.UserPromoteFed(fed.Id, userId)
 
-	_, err = msg.ReplyHTMLf("User %v is now an admin of <b>%v</b> (<code>%v</code>)", helpers.MentionHtml(uId, member.FirstName), fed.FedName, fed.FedId)
+	_, err = msg.ReplyHTMLf("User %v is now an admin of <b>%v</b> (<code>%v</code>)", helpers.MentionHtml(uId, member.FirstName), fed.FedName, fed.Id)
 	return err
 }
 
@@ -195,13 +195,13 @@ func fedDemote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		return err
 	}
 
-	if sql.IsUserFedAdmin(fed.FedId, userId) == "" {
+	if sql.IsUserFedAdmin(fed.Id, userId) == "" {
 		_, err := msg.ReplyText("This user is not a federation admin in your federation.")
 		return err
 	}
 
-	go sql.UserDemoteFed(fed.FedId, userId)
+	go sql.UserDemoteFed(fed.Id, userId)
 
-	_, err = msg.ReplyHTMLf("User %v is no longer an admin of <b>%v</b> (<code>%v</code>)", helpers.MentionHtml(uId, member.FirstName), fed.FedName, fed.FedId)
+	_, err = msg.ReplyHTMLf("User %v is no longer an admin of <b>%v</b> (<code>%v</code>)", helpers.MentionHtml(uId, member.FirstName), fed.FedName, fed.Id)
 	return err
 }

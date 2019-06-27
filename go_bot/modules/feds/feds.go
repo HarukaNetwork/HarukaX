@@ -81,7 +81,7 @@ func fedBan(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	if fbannedUser == nil {
 		_, err := msg.ReplyHTMLf("Beginning federation ban of %v in %v.", helpers.MentionHtml(member.Id, member.FirstName), fed.FedName)
 		error_handling.HandleErr(err)
-		go func(bot ext.Bot, user *ext.Chat, userId int, federations *sql.Federations, reason string) {
+		go func(bot ext.Bot, user *ext.Chat, userId int, federations *sql.Federation, reason string) {
 			for _, chat := range sql.AllFedChats(fedId) {
 				chatId, err := strconv.Atoi(chat)
 				error_handling.HandleErr(err)
@@ -149,7 +149,7 @@ func unfedban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	fbannedUser := sql.GetFbanUser(fedId, strconv.Itoa(userId))
 
 	if fbannedUser == nil {
-		_, err := msg.ReplyHTMLf("This user isn't banned in the current federation, <b>%v</b>.\n(<code>%v</code>)", fed.FedName, fed.FedId)
+		_, err := msg.ReplyHTMLf("This user isn't banned in the current federation, <b>%v</b>.\n(<code>%v</code>)", fed.FedName, fed.Id)
 		return err
 	}
 
@@ -157,7 +157,7 @@ func unfedban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 
 	member, _ := bot.GetChat(userId)
 
-	go func(bot ext.Bot, user *ext.Chat, userId int, federations *sql.Federations) {
+	go func(bot ext.Bot, user *ext.Chat, userId int, federations *sql.Federation) {
 		for _, chat := range sql.AllFedChats(fedId) {
 			chatId, err := strconv.Atoi(chat)
 			error_handling.HandleErr(err)
@@ -194,7 +194,7 @@ func fedCheckBan(bot ext.Bot, u *gotgbot.Update) error {
 	if fed == nil {
 		return gotgbot.ContinueGroups{}
 	}
-	member := sql.GetFbanUser(fed.FedId, strconv.Itoa(user.Id))
+	member := sql.GetFbanUser(fed.Id, strconv.Itoa(user.Id))
 
 	if member != nil {
 		_, err := msg.Delete()
@@ -223,6 +223,7 @@ func LoadFeds(u *gotgbot.Updater) {
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedadmins", fedAdmins))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedban", fedBan))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("unfedban", unfedban))
+	//u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedstat", fedStat))
 
 	// Shorter aliases
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fpromote", fedPromote))

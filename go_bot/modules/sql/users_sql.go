@@ -2,140 +2,53 @@ package sql
 
 import (
 	"fmt"
-	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/PaulSonOfLars/gotgbot"
-	"github.com/go-pg/pg/orm"
 	"strings"
 )
 
-type Users struct {
-	UserId   int `sql:",pk"`
+type User struct {
+	UserId   int `gorm:"primary_key"`
 	UserName string
 }
 
-func (u Users) String() string {
+func (u User) String() string {
 	return fmt.Sprintf("User<%s (%d)>", u.UserName, u.UserId)
 }
 
-type Chats struct {
-	ChatId   string `sql:",pk"`
+type Chat struct {
+	ChatId   string `gorm:"primary_key"`
 	ChatName string
 }
 
-func (c Chats) String() string {
+func (c Chat) String() string {
 	return fmt.Sprintf("<Chat %s (%s)>", c.ChatName, c.ChatId)
 }
 
-type ChatMembers struct {
-	Chat       string `sql:",pk" pg:"fk:chat_id"`
-	User       int    `sql:",pk" pg:"fk:user_id"`
-}
-
 func EnsureBotInDb(u *gotgbot.Updater) {
-	// Create tables if they don't exist
-	models := []interface{}{&Users{}, &Chats{}, &ChatMembers{}, &Warns{}, &WarnFilters{}, &WarnSettings{}, &BlackListFilters{},
-		&Federations{}, &FedChats{}, &FedBans{}, &FedAdmins{}}
-	for _, model := range models {
-		err := SESSION.CreateTable(model, &orm.CreateTableOptions{FKConstraints: true})
-		if err != nil {
-			// Log errors if they aren't related to already existing tables
-			if !strings.HasSuffix(err.Error(), "already exists") {
-				error_handling.HandleErr(err)
-			}
-		}
-	}
-
 	// Insert bot user only if it doesn't exist already
-	botUser := &Users{UserId: u.Dispatcher.Bot.Id, UserName: u.Dispatcher.Bot.UserName}
-	_, err := SESSION.Model(botUser).OnConflict("(user_id) DO UPDATE").Set("user_name = EXCLUDED.user_name").Insert()
-	error_handling.HandleErr(err)
+	botUser := &User{UserId: u.Dispatcher.Bot.Id, UserName: u.Dispatcher.Bot.UserName}
+	SESSION.Save(botUser)
 }
 
 func UpdateUser(userId int, username string, chatId string, chatName string) {
 	username = strings.ToLower(username)
 
 	// upsert user
-	user := &Users{UserName: username, UserId: userId}
-	_, err := SESSION.Model(user).OnConflict("(user_id) DO UPDATE").Set("user_name = EXCLUDED.user_name").Insert()
-	error_handling.HandleErr(err)
+	user := &User{UserName: username, UserId: userId}
+	SESSION.Save(user)
 
 	if chatId == "nil" || chatName == "nil" {
 		return
 	}
 
 	// upsert chat
-	chat := &Chats{ChatId: string(chatId), ChatName: chatName}
-
-	_, err = SESSION.Model(chat).OnConflict("(chat_id) DO UPDATE").Set("chat_name = EXCLUDED.chat_name").Insert()
-	error_handling.HandleErr(err)
-
-	if  chat.ChatId[0] == '-'{
-		// upsert chat_member
-		member := &ChatMembers{Chat: chat.ChatId, User: user.UserId}
-		_ = SESSION.Insert(member)
-	}
+	chat := &Chat{ChatId: string(chatId), ChatName: chatName}
+	SESSION.Save(chat)
 }
 
-func GetUserIdByName(username string) *Users {
+func GetUserIdByName(username string) *User {
 	username = strings.ToLower(username)
-	user := new(Users)
-	err := SESSION.Model(user).Where("user_name = ?", username).Select()
-	if err != nil {
-		return new(Users)
-	}
+	user := new(User)
+	SESSION.Where("user_name = ?", username).First(user)
 	return user
-}
-
-func GetNameByUserId(userId int) *Users {
-	user := &Users{UserId: userId}
-	err := SESSION.Select(user)
-	if err != nil {
-		return new(Users)
-	}
-	return user
-}
-
-func GetChatMembers(chatId string) []ChatMembers {
-	var chatMembers []ChatMembers
-	err := SESSION.Model(&chatMembers).Where("Chat_Members.chat = ?", chatId).Select()
-	error_handling.HandleErr(err)
-	return chatMembers
-}
-
-func GetAllChats() []Chats {
-	var chats []Chats
-	err := SESSION.Model(&chats).Select()
-	error_handling.HandleErr(err)
-	return chats
-}
-
-func GetUserNumChats(userId int) int {
-	count, err := SESSION.Model(new(ChatMembers)).Where("chat_members.user = ?", userId).SelectAndCount()
-	error_handling.HandleErr(err)
-	return count
-}
-
-func NumChats() int {
-	count, err := SESSION.Model(new(Chats)).SelectAndCount()
-	error_handling.HandleErr(err)
-	return count
-}
-
-func NumUsers() int {
-	count, err := SESSION.Model(new(Users)).SelectAndCount()
-	error_handling.HandleErr(err)
-	return count
-}
-
-func DelUser(userId int) bool {
-	user := &Users{UserId: userId}
-	err := SESSION.Select(user)
-	if err == nil {
-		err := SESSION.Delete(user)
-		error_handling.HandleErr(err)
-		err = SESSION.Delete(&ChatMembers{User: userId})
-		error_handling.HandleErr(err)
-		return true
-	}
-	return false
 }

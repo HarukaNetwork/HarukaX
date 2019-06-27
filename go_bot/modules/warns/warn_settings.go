@@ -70,7 +70,7 @@ func setWarnStrength(_ ext.Bot, u *gotgbot.Update, args []string) error {
 			return err
 		} else if strings.ToLower(args[0]) == "off" || strings.ToLower(args[0]) == "no" {
 			go sql.SetWarnStrength(strconv.Itoa(chat.Id), true)
-			_, err := msg.ReplyText("Too many warns will now result in a kick! Users will be able to join again after.")
+			_, err := msg.ReplyText("Too many warns will now result in a kick! User will be able to join again after.")
 			return err
 		} else {
 			_, err := msg.ReplyText("I only understand on/yes/no/off!")
