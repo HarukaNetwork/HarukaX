@@ -41,6 +41,7 @@ func ExtractUserAndText(m *ext.Message, args []string) (int, string) {
 	entities := m.ParseEntityTypes(accepted)
 
 	var ent *ext.ParsedMessageEntity
+	var isId = false
 	if len(entities) > 0 {
 		ent = &entities[0]
 	} else {
@@ -65,7 +66,7 @@ func ExtractUserAndText(m *ext.Message, args []string) (int, string) {
 			}
 		}
 	} else if len(args) >= 1 {
-		isId := true
+		isId = true
 		for _, arg := range args[0] {
 			if unicode.IsDigit(arg) {
 				continue
@@ -81,7 +82,8 @@ func ExtractUserAndText(m *ext.Message, args []string) (int, string) {
 				text = res[2]
 			}
 		}
-	} else if prevMessage != nil {
+	}
+	if !isId && prevMessage != nil {
 		userId, text = IdFromReply(m)
 	} else {
 		return 0, ""
