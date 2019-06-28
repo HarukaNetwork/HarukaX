@@ -34,16 +34,16 @@ func UpdateUser(userId int, username string, chatId string, chatName string) {
 	username = strings.ToLower(username)
 
 	// upsert user
-	user := &User{UserName: username, UserId: userId}
-	SESSION.Save(user)
+	user := &User{}
+	SESSION.Where(User{UserId:userId}).Assign(User{UserName:username}).FirstOrCreate(user)
 
 	if chatId == "nil" || chatName == "nil" {
 		return
 	}
 
 	// upsert chat
-	chat := &Chat{ChatId: string(chatId), ChatName: chatName}
-	SESSION.Save(chat)
+	chat := &Chat{}
+	SESSION.Where(Chat{ChatId:chatId}).Assign(Chat{ChatName:chatName}).FirstOrCreate(chat)
 }
 
 func GetUserIdByName(username string) *User {
