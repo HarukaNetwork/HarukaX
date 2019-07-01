@@ -85,8 +85,6 @@ func ExtractUserAndText(m *ext.Message, args []string) (int, string) {
 	}
 	if !isId && prevMessage != nil {
 		userId, text = IdFromReply(m)
-	} else {
-		return 0, ""
 	}
 
 	_, err := m.Bot.GetChat(userId)
