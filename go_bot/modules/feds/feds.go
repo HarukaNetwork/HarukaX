@@ -223,7 +223,7 @@ func LoadFeds(u *gotgbot.Updater) {
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedadmins", fedAdmins))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedban", fedBan))
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("unfedban", unfedban))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedstat", fedStat))
+	//u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedstat", fedStat))
 
 	// Shorter aliases
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fpromote", fedPromote))
