@@ -2,18 +2,21 @@ package helpers
 
 import (
 	"fmt"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
+	tg_md2html "github.com/PaulSonOfLars/gotg_md2html"
+	"github.com/PaulSonOfLars/gotgbot/ext"
 	"html"
 	"strings"
 )
 
-var MAX_MESSAGE_LENGTH = 4096
+var MaxMessageLength = 4096
 
 func MentionHtml(userId int, name string) string {
 	return fmt.Sprintf("<a href=\"tg://user?id=%d\">%s</a>", userId, html.EscapeString(name))
 }
 
 func SplitMessage(msg string) []string {
-	if len(msg) > MAX_MESSAGE_LENGTH {
+	if len(msg) > MaxMessageLength {
 		tmp := make([]string, 1)
 		tmp[0] = msg
 		return tmp
@@ -22,7 +25,7 @@ func SplitMessage(msg string) []string {
 		smallMsg := ""
 		result := make([]string, 0)
 		for _, line := range lines {
-			if len(smallMsg) + len(line) < MAX_MESSAGE_LENGTH {
+			if len(smallMsg) + len(line) < MaxMessageLength {
 				smallMsg += line + "\n"
 			} else {
 				result = append(result, smallMsg)
@@ -88,4 +91,83 @@ func RemoveEscapes(text string) string {
 		counter++
 	}
 	return res
+}
+
+func BuildKeyboard(buttons []sql.Button) [][]ext.InlineKeyboardButton {
+	keyb := make([][]ext.InlineKeyboardButton, 0)
+	for _, btn := range buttons {
+		if btn.SameLine && len(keyb) > 0 {
+			keyb[len(keyb) - 1] = append(keyb[len(keyb) - 1], ext.InlineKeyboardButton{Text:btn.Name, Url:btn.Url})
+		} else {
+			k := make([]ext.InlineKeyboardButton, 1)
+			k[0] = ext.InlineKeyboardButton{Text:btn.Name, Url:btn.Url}
+			keyb = append(keyb, k)
+		}
+	}
+	return keyb
+}
+
+func GetNoteType(msg *ext.Message) (string, string, int, string, []tg_md2html.Button) {
+	text := ""
+	var dataType = -1
+	var content string
+	var rawText string
+	if msg.Text == "" {
+		rawText = msg.Caption
+	} else {
+		rawText = msg.Text
+	}
+
+	args := strings.SplitN(rawText, " ", 3)
+	noteName := args[1]
+
+	buttons := make([]tg_md2html.Button, 0)
+	if len(args) >= 3 {
+		text, buttons = tg_md2html.MD2HTMLButtons(args[2])
+
+		if len(buttons) > 0 {
+			dataType = sql.BUTTON_TEXT
+		} else {
+			dataType = sql.TEXT
+		}
+	} else if msg.ReplyToMessage != nil {
+		var msgText string
+		if msg.ReplyToMessage.Text == "" {
+			msgText = msg.ReplyToMessage.Caption
+		} else {
+			rawText = msg.ReplyToMessage.Text
+		}
+		if len(args) >= 2 && msg.ReplyToMessage.Text != "" {
+			text, buttons = tg_md2html.MD2HTMLButtons(msgText)
+			if len(buttons) > 0 {
+				dataType = sql.BUTTON_TEXT
+			} else {
+				dataType = sql.TEXT
+			}
+		} else if msg.ReplyToMessage.Sticker != nil {
+			content = msg.ReplyToMessage.Sticker.FileId
+			dataType = sql.STICKER
+		} else if msg.ReplyToMessage.Document != nil {
+			content = msg.ReplyToMessage.Sticker.FileId
+			text, buttons = tg_md2html.MD2HTMLButtons(msgText)
+			dataType = sql.DOCUMENT
+		} else if len(msg.ReplyToMessage.Photo) > 0 {
+			content = msg.ReplyToMessage.Photo[len(msg.ReplyToMessage.Photo) - 1].FileId
+			text, buttons = tg_md2html.MD2HTMLButtons(msgText)
+			dataType = sql.PHOTO
+		} else if msg.ReplyToMessage.Audio != nil {
+			content = msg.ReplyToMessage.Audio.FileId
+			text, buttons = tg_md2html.MD2HTMLButtons(msgText)
+			dataType = sql.AUDIO
+		} else if msg.ReplyToMessage.Voice != nil {
+			content = msg.ReplyToMessage.Voice.FileId
+			text, buttons = tg_md2html.MD2HTMLButtons(msgText)
+			dataType = sql.VOICE
+		} else if msg.ReplyToMessage.Video != nil {
+			content = msg.ReplyToMessage.Video.FileId
+			text, buttons = tg_md2html.MD2HTMLButtons(msgText)
+			dataType = sql.VIDEO
+		}
+	}
+	return noteName, text, dataType, content, buttons
 }

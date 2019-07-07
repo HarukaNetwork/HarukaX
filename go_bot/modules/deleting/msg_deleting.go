@@ -41,11 +41,11 @@ func purge(bot ext.Bot, u *gotgbot.Update) error {
 			}
 			_, err := msg.Delete()
 			if err != nil {
-				if err.Error() == "Message can't be deleted" {
+				if err.Error() == "Bad Request: message can't be deleted" {
 					_, err := bot.SendMessage(chat.Id, "Cannot delete all messages. The messages may be too old, I might "+
 						"not have delete rights, or this might not be a supergroup.")
 					error_handling.HandleErr(err)
-				} else if err.Error() == "Message to delete not found" {
+				} else if err.Error() == "Bad Request: message to delete not found" {
 					error_handling.HandleErr(err)
 				}
 			}

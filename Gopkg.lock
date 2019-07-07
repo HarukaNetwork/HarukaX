@@ -3,6 +3,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:3fb6f82f8fee510636f44f1d869e6672c79b7a75f4900f10a50793b1db9430fa"
+  name = "github.com/PaulSonOfLars/gotg_md2html"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "600f7c64452bd9279d65ab38cf587a137a7fe5bb"
+
+[[projects]]
+  branch = "master"
   digest = "1:db870b540cc6d0aee7296e9c40b03bdbb5a0f894456b1fbeb8ad8c2d321b68ba"
   name = "github.com/PaulSonOfLars/gotgbot"
   packages = [
@@ -107,6 +115,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/PaulSonOfLars/gotg_md2html",
     "github.com/PaulSonOfLars/gotgbot",
     "github.com/PaulSonOfLars/gotgbot/ext",
     "github.com/PaulSonOfLars/gotgbot/handlers",

@@ -9,6 +9,7 @@ import (
 	"github.com/ATechnoHazard/ginko/go_bot/modules/feds"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/misc"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/muting"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/notes"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/users"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
@@ -40,6 +41,7 @@ func main() {
 	deleting.LoadDelete(u)
 	blacklist.LoadBlacklist(u)
 	feds.LoadFeds(u)
+	notes.LoadNotes(u)
 
 	log.Println("Starting long polling")
 	err = u.StartPolling()

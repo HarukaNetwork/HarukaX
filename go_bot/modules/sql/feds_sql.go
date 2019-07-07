@@ -10,17 +10,17 @@ type Federation struct {
 	FedName string
 	//FedAdmins []FedAdmin `gorm:"foreignkey:Id"`
 	//FedChats []FedChat `gorm:"foreignkey:Id"`
-	//FedBans []FedBan `gorm:"foreignkey:Id"`
+	FedBans []FedBan `gorm:"foreignkey:FedRef"`
 }
 
 type FedAdmin struct {
-	FedId  string `gorm:"primary_key"`
+	FedRef string `gorm:"primary_key"`
 	UserId string `gorm:"primary_key"`
 }
 
 type FedChat struct {
 	ChatId string `gorm:"primary_key"`
-	FedId  string
+	FedRef string
 }
 
 type FedBan struct {
@@ -50,7 +50,7 @@ func GetFedId(chatId string) string {
 	if SESSION.Where("chat_id = ?", chatId).First(chat).RowsAffected == 0 {
 		return ""
 	}
-	return chat.FedId
+	return chat.FedRef
 } // No dirty reads
 
 func NewFed(ownerId string, fedId string, fedName string) bool {
@@ -84,7 +84,7 @@ func IsUserFedAdmin(fedId string, userId string) string {
 		return fed.OwnerId
 	}
 
-	admin := &FedAdmin{FedId: fedId, UserId: userId}
+	admin := &FedAdmin{FedRef: fedId, UserId: userId}
 
 	if SESSION.First(admin).RowsAffected == 0 {
 		return ""
@@ -96,21 +96,21 @@ func IsUserFedAdmin(fedId string, userId string) string {
 func GetChatFed(chatId string) *Federation {
 	chat := &FedChat{ChatId: chatId}
 	SESSION.Where("chat_id = ?", chatId).First(chat)
-	return GetFedInfo(chat.FedId)
+	return GetFedInfo(chat.FedRef)
 } // No dirty reads
 
 func ChatJoinFed(fedId string, chatId string) bool {
-	chat := &FedChat{FedId: fedId, ChatId: chatId}
+	chat := &FedChat{FedRef: fedId, ChatId: chatId}
 	return SESSION.Save(chat).Error == nil
 } // No dirty reads
 
 func UserPromoteFed(fedId string, userId string) {
-	admin := &FedAdmin{FedId: fedId, UserId: userId}
+	admin := &FedAdmin{FedRef: fedId, UserId: userId}
 	SESSION.Save(admin)
 } //no dirty read
 
 func UserDemoteFed(fedId string, userId string) {
-	admin := &FedAdmin{FedId: fedId, UserId: userId}
+	admin := &FedAdmin{FedRef: fedId, UserId: userId}
 	SESSION.Delete(admin)
 } // no dirty read
 
@@ -156,9 +156,12 @@ func GetAllFbanUsers(fedId string) []FedBan {
 
 func GetUserFbans(userId string) []Federation {
 	var feds []Federation
-	SESSION.Table("federations").Select("federations.id, federations.fed_name").
-		Joins("left join fed_bans on fed_bans.fed_ref = federations.id").
-		Where("fed_bans.user_id = ?", userId).Find(&feds)
+	//SESSION.Table("federations").Select("federations.id, federations.fed_name").
+	//	Joins("left join fed_bans on fed_bans.fed_ref = federations.id").
+	//	Where("fed_bans.user_id = ?", userId).Find(&feds)
+
+	SESSION.Raw("SELECT federations FROM federations, fed_bans WHERE federations.id = fed_bans.fed_ref AND fed_bans.user_id=?", userId).Scan(&feds)
+
 	return feds
 }
 
