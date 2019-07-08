@@ -4,6 +4,7 @@ import (
 	"github.com/ATechnoHazard/ginko/go_bot/modules/users"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/PaulSonOfLars/gotgbot/ext"
+	"github.com/google/uuid"
 	"strconv"
 	"strings"
 	"unicode"
@@ -84,11 +85,21 @@ func ExtractUserAndText(m *ext.Message, args []string) (int, string) {
 		}
 	}
 	if !isId && prevMessage != nil {
+		_, parseErr := uuid.Parse(args[0])
 		userId, text = IdFromReply(m)
+		if parseErr == nil {
+			return userId, text
+		}
+	} else if !isId {
+		_, parseErr := uuid.Parse(args[0])
+		if parseErr == nil {
+			return userId, text
+		}
 	}
 
 	_, err := m.Bot.GetChat(userId)
 	if err != nil {
+
 		_, err := m.ReplyText("I don't seem to have interacted with this user before - please forward a message from " +
 			"them to give me control! (like a voodoo doll, I need a piece of them to be able " +
 			"to execute certain commands...)")
