@@ -106,13 +106,45 @@ func fedAdmins(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	return err
 }
 
-func fedStat(_ ext.Bot, u *gotgbot.Update, args []string) error {
+func fedStat(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	user := u.EffectiveUser
 	msg := u.EffectiveMessage
+	var fedId = ""
 
 	userId := extraction.ExtractUser(msg, args)
 	if userId == 0 {
 		userId = user.Id
+		if len(args) >= 1 {
+			fedId = args[0]
+		}
+	} else {
+		if len(args) >= 2 {
+			fedId = args[1]
+		}
+	}
+
+	chatMember, err := bot.GetChat(userId)
+	if err != nil {
+		return err
+	}
+
+	if fedId != "" {
+		fed := sql.GetFedInfo(fedId)
+		if fed == nil {
+			_, err := msg.ReplyText("Please use a valid federation ID!")
+			return err
+		}
+
+		fban := sql.GetFbanUser(fedId, strconv.Itoa(userId))
+		if fban == nil {
+			_, err := msg.ReplyText("Good news! You aren't fedbanned in this federation!")
+			return err
+		} else {
+			text := fmt.Sprintf("%v is fedbanned in <b>%v</b> for the following reason:\n" +
+				" - %v",helpers.MentionHtml(chatMember.Id, chatMember.FirstName) ,fed.FedName, fban.Reason)
+			_, err := msg.ReplyHTML(text)
+			return err
+		}
 	}
 
 	feds := sql.GetUserFbans(strconv.Itoa(userId))
@@ -120,15 +152,15 @@ func fedStat(_ ext.Bot, u *gotgbot.Update, args []string) error {
 		_, err := msg.ReplyText("Well damn, something went wrong.")
 		return err
 	} else if len(feds) == 0 {
-		_, err := msg.ReplyHTMLf("%v hasn't been fedbanned anywhere!", helpers.MentionHtml(userId, user.FirstName))
+		_, err := msg.ReplyHTMLf("%v hasn't been fedbanned anywhere!", helpers.MentionHtml(userId, chatMember.FirstName))
 		return err
 	}
-	text := fmt.Sprintf("%v has been banned in the following federations:\n", helpers.MentionHtml(userId, user.FirstName))
+	text := fmt.Sprintf("%v has been banned in the following federations:\n", helpers.MentionHtml(userId, chatMember.FirstName))
 	for _, fed := range feds {
 		text += fmt.Sprintf("<b>%v</b> - <code>%v</code>\n", fed.FedName, fed.Id)
 	}
 	text += "If you would like to know more about the fedban reason in a specific federation, use /fbanstat FedID."
 
-	_, err := msg.ReplyHTMLf(text)
+	_, err = msg.ReplyHTMLf(text)
 	return err
 }
