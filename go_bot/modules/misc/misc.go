@@ -3,6 +3,7 @@ package misc
 import (
 	"fmt"
 	"github.com/ATechnoHazard/ginko/go_bot"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/extraction"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/helpers"
@@ -53,6 +54,7 @@ func getId(bot ext.Bot, u *gotgbot.Update, args []string) error {
 
 func info(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	msg := u.EffectiveMessage
+	chat := u.EffectiveChat
 	userId := extraction.ExtractUser(msg, args)
 	var user *ext.User
 
@@ -88,6 +90,17 @@ func info(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	}
 
 	text += fmt.Sprintf("\nPermanent user link: %v", helpers.MentionHtml(user.Id, user.FirstName+user.LastName))
+
+	fed := sql.GetChatFed(strconv.Itoa(chat.Id))
+	if fed != nil {
+		fban := sql.GetFbanUser(fed.Id, strconv.Itoa(userId))
+		if fban != nil {
+			text += fmt.Sprintf("\n\nThis user is fedbanned in the current federation - " +
+				"<code>%v</code>", fed.FedName)
+		} else {
+			text += "\n\nThis user is not fedbanned in the current federation."
+		}
+	}
 
 	if user.Id == go_bot.BotConfig.OwnerId {
 		text += "\n\nDis nibba stronk af!"
