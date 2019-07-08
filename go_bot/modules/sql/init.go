@@ -22,10 +22,6 @@ func init() {
 	log.Println("Database connected")
 
 	// Create tables if they don't exist
-	SESSION.AutoMigrate(&User{}, &Chat{})
-	SESSION.AutoMigrate(&Warns{}, &WarnFilters{}, &WarnSettings{})
-	SESSION.AutoMigrate(&BlackListFilters{})
-	SESSION.AutoMigrate(&Federation{}, &FedChat{}, &FedAdmin{}, &FedBan{})
-
+	SESSION.AutoMigrate(&User{}, &Chat{}, &Warns{}, &WarnFilters{}, &WarnSettings{},&BlackListFilters{}, &Federation{}, &FedChat{}, &FedAdmin{}, &FedBan{}, &Note{}, &Button{})
 	log.Println("Auto-migrated database schema")
 }

@@ -1,13 +1,17 @@
 package notes
 
 import (
+	"fmt"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/chat_status"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/helpers"
 	tgmd2html "github.com/PaulSonOfLars/gotg_md2html"
 	"github.com/PaulSonOfLars/gotgbot"
 	"github.com/PaulSonOfLars/gotgbot/ext"
 	"github.com/PaulSonOfLars/gotgbot/handlers"
 	"github.com/PaulSonOfLars/gotgbot/parsemode"
+	"html"
 	"log"
 	"strconv"
 	"strings"
@@ -16,7 +20,7 @@ import (
 func get(bot ext.Bot, u *gotgbot.Update, noteName string, showNone bool, noFormat bool) error {
 	chatId := u.EffectiveChat.Id
 	note := sql.GetNote(strconv.Itoa(chatId), noteName)
-	msg := u.EditedMessage
+	msg := u.EffectiveMessage
 
 	replyId := msg.MessageId
 
@@ -148,7 +152,7 @@ func cmdGet(bot ext.Bot, u *gotgbot.Update, args []string) error {
 }
 
 func hashGet(bot ext.Bot, u *gotgbot.Update) error {
-	msg := u.EditedMessage
+	msg := u.EffectiveMessage
 	fstWord := strings.Split(msg.Text, " ")[0]
 	noHash := fstWord[1:]
 	return get(bot, u, noHash, false, false)
@@ -158,6 +162,11 @@ func save(_ ext.Bot, u *gotgbot.Update) error {
 	chatId := u.EffectiveChat.Id
 	msg := u.EffectiveMessage
 	noteName, text, dataType, content, buttons := helpers.GetNoteType(msg)
+
+	if !chat_status.RequireUserAdmin(u.EffectiveChat, msg, u.EffectiveUser.Id, nil) {
+		return gotgbot.ContinueGroups{}
+	}
+
 	if dataType == -1 {
 		_, err := msg.ReplyText("Dude, there's no note!")
 		return err
@@ -178,9 +187,58 @@ func save(_ ext.Bot, u *gotgbot.Update) error {
 	return err
 }
 
+func clear(_ ext.Bot, u *gotgbot.Update, args []string) error {
+	chatId := u.EffectiveChat.Id
+
+	if !chat_status.RequireUserAdmin(u.EffectiveChat, u.EffectiveMessage, u.EffectiveUser.Id, nil) {
+		return gotgbot.ContinueGroups{}
+	}
+
+	if len(args) >= 1 {
+		noteName := args[0]
+
+		if sql.RmNote(strconv.Itoa(chatId), noteName) {
+			_, err := u.EffectiveMessage.ReplyTextf("Successfully removed note %v", noteName)
+			return err
+		} else {
+			_, err := u.EffectiveMessage.ReplyText("That's not a note in my database!")
+			return err
+		}
+	}
+	return nil
+}
+
+func listNotes(_ ext.Bot, u *gotgbot.Update) error {
+	chatId := u.EffectiveChat.Id
+	noteList := sql.GetAllChatNotes(strconv.Itoa(chatId))
+
+	msg := "<code>Notes in chat:</code>\n"
+	for _, note := range noteList {
+		noteName := html.EscapeString(fmt.Sprintf(" - %v\n", note.Name))
+		if len(msg) + len(noteName) > helpers.MaxMessageLength {
+			_, err := u.EffectiveMessage.ReplyHTML(msg)
+			msg = ""
+			error_handling.HandleErr(err)
+		}
+		msg += noteName
+	}
+
+	if msg == "<code>Notes in chat:</code>\n" {
+		_, err := u.EffectiveMessage.ReplyText("No notes in this chat!")
+		return err
+	} else if len(msg) != 0 {
+		_, err := u.EffectiveMessage.ReplyHTML(msg)
+		return err
+	}
+	return nil
+}
+
 func LoadNotes(u *gotgbot.Updater) {
 	defer log.Println("Loading module notes")
 	u.Dispatcher.AddHandler(handlers.NewArgsCommand("get", cmdGet))
 	u.Dispatcher.AddHandler(handlers.NewRegex(`^#[^\s]+`, hashGet))
 	u.Dispatcher.AddHandler(handlers.NewCommand("save", save))
+	u.Dispatcher.AddHandler(handlers.NewArgsCommand("clear", clear))
+	u.Dispatcher.AddHandler(handlers.NewCommand("notes", listNotes))
+	u.Dispatcher.AddHandler(handlers.NewCommand("saved", listNotes))
 }
