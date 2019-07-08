@@ -65,16 +65,16 @@ func NewFed(ownerId string, fedId string, fedName string) bool {
 
 func DelFed(fedId string) {
 	fed := &Federation{}
-	SESSION.Where("fed_id = ?", fedId).Delete(fed)
+	SESSION.Where("id = ?", fedId).Delete(fed)
 
 	chat := &FedChat{}
-	SESSION.Model(chat).Where("fed_id = ?", fedId).Delete(chat)
+	SESSION.Model(chat).Where("id = ?", fedId).Delete(chat)
 
 	admins := &FedAdmin{}
-	SESSION.Model(&admins).Where("fed_id = ?", fedId).Delete(admins)
+	SESSION.Model(&admins).Where("id = ?", fedId).Delete(admins)
 
 	bans := &FedBan{}
-	SESSION.Model(bans).Where("fed_id = ?", fedId).Delete(bans)
+	SESSION.Model(bans).Where("id = ?", fedId).Delete(bans)
 } // No dirty reads
 
 func IsUserFedAdmin(fedId string, userId string) string {
@@ -122,7 +122,7 @@ func ChatLeaveFed(chatId string) bool {
 
 func AllFedChats(fedId string) []string {
 	var chats []FedChat
-	SESSION.Where("fed_id = ?", fedId).Find(&chats)
+	SESSION.Where("fed_ref = ?", fedId).Find(&chats)
 	tmp := make([]string, 0)
 	for _, chat := range chats {
 		tmp = append(tmp, chat.ChatId)
@@ -150,17 +150,17 @@ func GetFbanUser(fedId string, userId string) *FedBan {
 
 func GetAllFbanUsers(fedId string) []FedBan {
 	var bans []FedBan
-	SESSION.Where("fed_id = ?", fedId).Find(&bans)
+	SESSION.Where("id = ?", fedId).Find(&bans)
 	return bans
 } // no dirty read
 
 func GetUserFbans(userId string) []Federation {
 	var feds []Federation
-	//SESSION.Table("federations").Select("federations.id, federations.fed_name").
-	//	Joins("left join fed_bans on fed_bans.fed_ref = federations.id").
-	//	Where("fed_bans.user_id = ?", userId).Find(&feds)
+	SESSION.Table("federations").Select("federations.id, federations.fed_name").
+		Joins("left join fed_bans on fed_bans.fed_ref = federations.id").
+		Where("fed_bans.user_id = ?", userId).Find(&feds)
 
-	SESSION.Raw("SELECT federations FROM federations, fed_bans WHERE federations.id = fed_bans.fed_ref AND fed_bans.user_id=?", userId).Scan(&feds)
+	// SESSION.Raw("SELECT federations FROM federations, fed_bans WHERE federations.id = fed_bans.fed_ref AND fed_bans.user_id=?", userId).Scan(&feds)
 
 	return feds
 }
@@ -184,6 +184,6 @@ func IsUserFedOwner(userId string, fedId string) bool {
 
 func GetFedAdmins(fedId string) []FedAdmin {
 	var admins []FedAdmin
-	SESSION.Where("fed_id = ?", fedId).Find(&admins)
+	SESSION.Where("id = ?", fedId).Find(&admins)
 	return admins
 }

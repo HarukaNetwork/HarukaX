@@ -123,11 +123,11 @@ func fedStat(_ ext.Bot, u *gotgbot.Update, args []string) error {
 		_, err := msg.ReplyHTMLf("%v hasn't been fedbanned anywhere!", helpers.MentionHtml(userId, user.FirstName))
 		return err
 	}
-	text := fmt.Sprintf("%v has been banned in the following federations:", helpers.MentionHtml(userId, user.FirstName))
+	text := fmt.Sprintf("%v has been banned in the following federations:\n", helpers.MentionHtml(userId, user.FirstName))
 	for _, fed := range feds {
-		text += fmt.Sprintf("<b>%v</b> - <code>%v</code>", fed.FedName, fed.Id)
+		text += fmt.Sprintf("<b>%v</b> - <code>%v</code>\n", fed.FedName, fed.Id)
 	}
-	text += "If you would like to know more about the fedban reason in a specific federation, use /fbanstat <FedID>."
+	text += "If you would like to know more about the fedban reason in a specific federation, use /fbanstat FedID."
 
 	_, err := msg.ReplyHTMLf(text)
 	return err
