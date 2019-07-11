@@ -11,7 +11,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:db870b540cc6d0aee7296e9c40b03bdbb5a0f894456b1fbeb8ad8c2d321b68ba"
+  digest = "1:1fc2dfe5b67e686e758444135f98ed91f30dce31ebc7dafeeb99eb0fe8712a17"
   name = "github.com/PaulSonOfLars/gotgbot"
   packages = [
     ".",
@@ -21,7 +21,7 @@
     "parsemode",
   ]
   pruneopts = "UT"
-  revision = "912251417f9e5061eeeb631bed9b895fedb9b197"
+  revision = "b29cb3517f56b4cf889e7bbc9fce70a80672c7a4"
 
 [[projects]]
   digest = "1:582b704bebaa06b48c29b0cec224a6058a09c86883aaddabde889cd1a5f73e1b"
@@ -32,15 +32,15 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:c1a831110975734d22f89140e720da0bb5575b2516b37b2f242a5ea5e3e1e563"
+  digest = "1:da6718abe4d47b1132d98bf3f9b18e302d537bf6daf02bd40804d9295a3f32bd"
   name = "github.com/jinzhu/gorm"
   packages = [
     ".",
     "dialects/postgres",
   ]
   pruneopts = "UT"
-  revision = "01b66011427614f01e84a473b0303c917179f2a0"
-  version = "v1.9.9"
+  revision = "836fb2c19d84dac7b0272958dfb9af7cf0d0ade4"
+  version = "v1.9.10"
 
 [[projects]]
   digest = "1:01ed62f8f4f574d8aff1d88caee113700a2b44c42351943fa73cc1808f736a50"
@@ -105,11 +105,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:249fd56fb36a223aee164e2dc35e3b3a1b92dd3873dfb60216280b9fb9d4a784"
+  digest = "1:5b3f90037a9027c43bdcae488c39d41aadecb9d85e645bb62b773a0a6f6e86b8"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "15dcb6c0061f497a3f66e3ea034b629c6dd4d99e"
+  revision = "6ec70d6a5542cba804c6d16ebe8392601a0b7b60"
 
 [solve-meta]
   analyzer-name = "dep"
