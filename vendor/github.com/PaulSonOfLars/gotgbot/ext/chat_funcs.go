@@ -44,10 +44,12 @@ func (b Bot) RestrictChatMember(chatId int, userId int) (bool, error) {
 
 func (b Bot) UnRestrictChatMember(chatId int, userId int) (bool, error) {
 	unRestrict := b.NewSendableRestrictChatMember(chatId, userId)
-	unRestrict.CanSendMessages = true
-	unRestrict.CanSendMediaMessages = true
-	unRestrict.CanSendOtherMessages = true
-	unRestrict.CanAddWebPagePreviews = true
+	temp := true
+	unRestrict.Permissions.CanSendMessages = &temp
+	unRestrict.Permissions.CanSendMediaMessages = &temp
+	unRestrict.Permissions.CanSendPolls = &temp
+	unRestrict.Permissions.CanSendOtherMessages = &temp
+	unRestrict.Permissions.CanAddWebPagePreviews = &temp
 	return unRestrict.Send()
 }
 
@@ -67,6 +69,11 @@ func (b Bot) DemoteChatMember(chatId int, userId int) (bool, error) {
 	demote.CanPinMessages = false
 	demote.CanPromoteMembers = false
 	return demote.Send()
+}
+
+func (b Bot) SetChatPermissions(chatId int, perms ChatPermissions) (bool, error) {
+	setChatPerms := b.NewSendableSetChatPermissions(chatId, perms)
+	return setChatPerms.Send()
 }
 
 func (b Bot) ExportChatInviteLink(chatId int) (string, error) {

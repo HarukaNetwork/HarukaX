@@ -3,15 +3,15 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:3fb6f82f8fee510636f44f1d869e6672c79b7a75f4900f10a50793b1db9430fa"
+  digest = "1:4c94310d0421717784e32e0a30ae470d5d28787439ce110bcdc06f046f02990a"
   name = "github.com/PaulSonOfLars/gotg_md2html"
   packages = ["."]
   pruneopts = "UT"
-  revision = "600f7c64452bd9279d65ab38cf587a137a7fe5bb"
+  revision = "7d177d22631c7761bed7dcf405aeeb8ee5963135"
 
 [[projects]]
   branch = "master"
-  digest = "1:1fc2dfe5b67e686e758444135f98ed91f30dce31ebc7dafeeb99eb0fe8712a17"
+  digest = "1:c817eb0112758a11fcf044e6c0dd7d523fe4b818ead67b0f6e90a19cfc28db7f"
   name = "github.com/PaulSonOfLars/gotgbot"
   packages = [
     ".",
@@ -21,7 +21,7 @@
     "parsemode",
   ]
   pruneopts = "UT"
-  revision = "b29cb3517f56b4cf889e7bbc9fce70a80672c7a4"
+  revision = "137f6d2752cc832a385eeb250f90d5419c027171"
 
 [[projects]]
   digest = "1:582b704bebaa06b48c29b0cec224a6058a09c86883aaddabde889cd1a5f73e1b"
@@ -32,15 +32,15 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:da6718abe4d47b1132d98bf3f9b18e302d537bf6daf02bd40804d9295a3f32bd"
+  digest = "1:a0216296da5c3191358b114fa8d2490477f5dff7380541551495b4f2a16989b3"
   name = "github.com/jinzhu/gorm"
   packages = [
     ".",
     "dialects/postgres",
   ]
   pruneopts = "UT"
-  revision = "836fb2c19d84dac7b0272958dfb9af7cf0d0ade4"
-  version = "v1.9.10"
+  revision = "81c17a7e2529c59efc4e74c5b32c1fb71fb12fa2"
+  version = "v1.9.11"
 
 [[projects]]
   digest = "1:01ed62f8f4f574d8aff1d88caee113700a2b44c42351943fa73cc1808f736a50"
@@ -105,11 +105,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:5632b0c4d972da51b5914f09fc5c1a8535e9d8d5d937e95ef83c423a0dd67f13"
+  digest = "1:7c927f17d868be652a4cfe7de23e4292dea5b14d974a1d536e3b7cb7e79fd695"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "fae7ac547cb717d141c433a2a173315e216b64c4"
+  revision = "b09406accb4736d857a32bf9444cd7edae2ffa79"
 
 [solve-meta]
   analyzer-name = "dep"

@@ -8,16 +8,10 @@ import (
 	"unicode"
 )
 
-var openHTML = map[rune][]rune{
-	'_': []rune("<i>"),
-	'*': []rune("<b>"),
-	'`': []rune("<code>"),
-}
-
-var closeHTML = map[rune][]rune{
-	'_': []rune("</i>"),
-	'*': []rune("</b>"),
-	'`': []rune("</code>"),
+var tagHTML = map[rune]string{
+	'_': "i",
+	'*': "b",
+	'`': "code",
 }
 
 var allMdChars = []rune{'_', '*', '`', '[', ']', '(', ')', '\\'}
@@ -53,17 +47,42 @@ func MD2HTML(input string) string {
 	return text
 }
 
-func MD2HTMLButtons(input string) (string, []Button) {
-	return defaultConverter.md2html([]rune(html.EscapeString(input)), true)
-}
-
 func (cv *Converter) MD2HTML(input string) string {
 	text, _ := cv.md2html([]rune(html.EscapeString(input)), false)
 	return text
 }
 
+func MD2HTMLButtons(input string) (string, []Button) {
+	return defaultConverter.md2html([]rune(html.EscapeString(input)), true)
+}
+
 func (cv *Converter) MD2HTMLButtons(input string) (string, []Button) {
 	return cv.md2html([]rune(html.EscapeString(input)), true)
+}
+
+func Reverse(s string, buttons []Button) string {
+	return defaultConverter.Reverse(s, buttons)
+}
+
+func (cv *Converter) Reverse(s string, buttons []Button) string {
+	return cv.reverse([]rune(s), buttons)
+}
+
+func StripMD(s string) string {
+	return defaultConverter.StripMD(s)
+}
+
+func (cv *Converter) StripMD(s string) string {
+	text, _ := cv.MD2HTMLButtons(s)
+	return cv.stripHTML([]rune(text))
+}
+
+func StripHTML(s string) string {
+	return defaultConverter.stripHTML([]rune(s))
+}
+
+func (cv *Converter) StripHTML(s string) string {
+	return cv.stripHTML([]rune(s))
 }
 
 func IsEscaped(input []rune, pos int) bool {
@@ -120,8 +139,8 @@ func (cv *Converter) md2html(input []rune, buttons bool) (string, []Button) {
 	var btnPairs []Button
 	for i := 0; i < len(containedMDChars) && prev < len(input); i++ {
 		currChar := containedMDChars[i] // check current character
-		posArr := v[currChar] // get the list of positions for relevant character
-		if len(posArr) <= 0 { // if no positions left, pass (sanity check)
+		posArr := v[currChar]           // get the list of positions for relevant character
+		if len(posArr) <= 0 {           // if no positions left, pass (sanity check)
 			continue
 		}
 		// if we're past the currChar position, pass and update
@@ -177,9 +196,9 @@ func (cv *Converter) md2html(input []rune, buttons bool) (string, []Button) {
 
 			bkp[currChar] = rest
 			output.WriteString(string(input[prev:fstPos]))
-			output.WriteString(string(openHTML[currChar]))
+			output.WriteString("<" + tagHTML[currChar] + ">")
 			output.WriteString(string(input[fstPos+1 : sndPos]))
-			output.WriteString(string(closeHTML[currChar]))
+			output.WriteString("</" + tagHTML[currChar] + ">")
 			prev = sndPos + 1
 
 			// ensure that items skipped for sndpos balance out with the count
@@ -193,7 +212,6 @@ func (cv *Converter) md2html(input []rune, buttons bool) (string, []Button) {
 				cnt++
 			}
 			i = cnt // set i to copy
-
 
 			for x, y := range bkp {
 				v[x] = y
@@ -276,16 +294,10 @@ func validEnd(pos int, input []rune) bool {
 	return !(pos == 0 || unicode.IsSpace(input[pos-1])) && (pos == len(input)-1 || !(unicode.IsLetter(input[pos+1]) || unicode.IsDigit(input[pos+1])))
 }
 
-func Reverse(s string, buttons []Button) string {
-	return defaultConverter.Reverse(s, buttons)
-}
-
-func (cv *Converter) Reverse(s string, buttons []Button) string {
-	return cv.reverse([]rune(s), buttons)
-}
-
+// todo: remove regexp dep
 var link = regexp.MustCompile(`a href="(.*)"`)
 
+// NOTE: If this gets edited, make sure to edit the strpi() method too
 // TODO: this needs to return string, error to handle bad parsing
 func (cv *Converter) reverse(r []rune, buttons []Button) string {
 	prev := 0
@@ -348,17 +360,11 @@ func (cv *Converter) reverse(r []rune, buttons []Button) string {
 			prev = closingClose + 1
 			i = closingClose
 
-		case '[', ']', '(', ')':
+		case '\\', '_', '*', '`', '[', ']', '(', ')': // these all need to be escaped to ensure we retain the same message
 			out.WriteString(html.UnescapeString(string(r[prev:i])))
 			out.WriteRune('\\')
 			out.WriteRune(r[i])
 			prev = i + 1
-
-		case '\\':
-			out.WriteString(html.UnescapeString(string(r[prev : i+1]))) // + 1 to include curr
-			out.WriteRune(r[i])
-			i++
-			prev = i
 		}
 	}
 	out.WriteString(html.UnescapeString(string(r[prev:])))
@@ -370,6 +376,60 @@ func (cv *Converter) reverse(r []rune, buttons []Button) string {
 		}
 		out.WriteString(")")
 	}
+
+	return out.String()
+}
+
+func (cv *Converter) stripHTML(r []rune) string {
+	prev := 0
+	out := strings.Builder{}
+	for i := 0; i < len(r); i++ {
+		switch r[i] {
+		case '<':
+			closeTag := 0
+			for ix, c := range r[i+1:] {
+				if c == '>' {
+					closeTag = i + ix + 1
+					break
+				}
+			}
+			if closeTag == 0 {
+				// "no close tag"
+				return ""
+			}
+
+			closingOpen := 0
+			for ix, c := range r[closeTag:] {
+				if c == '<' {
+					closingOpen = closeTag + ix
+					break
+				}
+			}
+			if closingOpen == 0 {
+				// "no closing open"
+				return ""
+			}
+
+			closingClose := 0
+			for ix, c := range r[closingOpen:] {
+				if c == '>' {
+					closingClose = closingOpen + ix
+					break
+				}
+			}
+			if closingClose == 0 {
+				// "no closing close"
+				return ""
+			}
+
+			out.WriteString(html.UnescapeString(string(r[prev:i])))
+			out.WriteString(html.UnescapeString(string(r[closeTag+1 : closingOpen])))
+
+			prev = closingClose + 1
+			i = closingClose
+		}
+	}
+	out.WriteString(html.UnescapeString(string(r[prev:])))
 
 	return out.String()
 }
