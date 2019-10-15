@@ -43,7 +43,7 @@ func get(bot ext.Bot, u *gotgbot.Update, noteName string, showNone bool, noForma
 			text := note.Value
 			keyb := make([][]ext.InlineKeyboardButton, 0)
 			buttons := sql.GetButtons(strconv.Itoa(chatId), noteName)
-			parseMode := parsemode.Markdown
+			parseMode := parsemode.Html
 			btns := make([]tgmd2html.Button, len(buttons))
 			for i, btn := range buttons {
 				btns[i] = tgmd2html.Button{Name: btn.Name, Content: btn.Url, SameLine: btn.SameLine}

@@ -118,6 +118,13 @@ func GetNoteType(msg *ext.Message) (string, string, int, string, []tg_md2html.Bu
 		rawText = msg.Text
 	}
 
+	for _, ent := range msg.Entities {
+		if ent.Type == "code" {
+			rawText = rawText[:ent.Offset] + "`" + rawText[ent.Offset:]
+			rawText = rawText[:(ent.Offset + ent.Length + 1)] + "`" + rawText[(ent.Offset + ent.Length + 1):]
+		}
+	}
+
 	args := strings.SplitN(rawText, " ", 3)
 	noteName := args[1]
 
