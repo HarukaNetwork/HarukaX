@@ -3,14 +3,14 @@ package sql
 import "github.com/jinzhu/gorm"
 
 const (
-	TEXT = 0
+	TEXT        = 0
 	BUTTON_TEXT = 1
-	STICKER = 2
-	DOCUMENT = 3
-	PHOTO = 4
-	AUDIO = 5
-	VOICE = 6
-	VIDEO = 7
+	STICKER     = 2
+	DOCUMENT    = 3
+	PHOTO       = 4
+	AUDIO       = 5
+	VOICE       = 6
+	VIDEO       = 7
 )
 
 type Note struct {
@@ -46,7 +46,7 @@ func AddNoteToDb(chatId string, noteName string, noteData string, msgtype int, b
 	}
 
 	note := &Note{ChatId: chatId, Name: noteName, Value: noteData, Msgtype: msgtype, File: file}
-	tx.FirstOrCreate(note)
+	tx.Where(Note{ChatId: chatId, Name: noteName}).Assign(Note{Value: noteData, Msgtype: msgtype, File: file}).FirstOrCreate(note)
 
 	for _, btn := range buttons {
 		AddNoteButtonToDb(chatId, noteName, btn.Name, btn.Url, btn.SameLine, tx)
