@@ -8,7 +8,7 @@ type Federation struct {
 	Id      string `gorm:"primary_key"`
 	OwnerId string
 	FedName string
-	//FedAdmins []FedAdmin `gorm:"foreignkey:Id"`
+	FedAdmins []FedAdmin `gorm:"foreignkey:Id"`
 	//FedChats []FedChat `gorm:"foreignkey:Id"`
 	FedBans []FedBan `gorm:"foreignkey:FedRef"`
 }
@@ -160,8 +160,6 @@ func GetUserFbans(userId string) []Federation {
 		Joins("left join fed_bans on fed_bans.fed_ref = federations.id").
 		Where("fed_bans.user_id = ?", userId).Find(&feds)
 
-	// SESSION.Raw("SELECT federations FROM federations, fed_bans WHERE federations.id = fed_bans.fed_ref AND fed_bans.user_id=?", userId).Scan(&feds)
-
 	return feds
 }
 
@@ -184,6 +182,6 @@ func IsUserFedOwner(userId string, fedId string) bool {
 
 func GetFedAdmins(fedId string) []FedAdmin {
 	var admins []FedAdmin
-	SESSION.Where("id = ?", fedId).Find(&admins)
+	SESSION.Where("fed_ref = ?", fedId).Find(&admins)
 	return admins
 }
