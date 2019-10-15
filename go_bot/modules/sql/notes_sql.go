@@ -1,7 +1,5 @@
 package sql
 
-import "github.com/jinzhu/gorm"
-
 const (
 	TEXT        = 0
 	BUTTON_TEXT = 1
@@ -45,11 +43,14 @@ func AddNoteToDb(chatId string, noteName string, noteData string, msgtype int, b
 		tx.Delete(&btn)
 	}
 
+	hasButtons := len(buttons) > 0
+
 	note := &Note{ChatId: chatId, Name: noteName, Value: noteData, Msgtype: msgtype, File: file}
-	tx.Where(Note{ChatId: chatId, Name: noteName}).Assign(Note{Value: noteData, Msgtype: msgtype, File: file}).FirstOrCreate(note)
+	tx.Where(Note{ChatId: chatId, Name: noteName}).Assign(Note{Value: noteData, Msgtype: msgtype, File: file, HasButtons: hasButtons}).FirstOrCreate(note)
 
 	for _, btn := range buttons {
-		AddNoteButtonToDb(chatId, noteName, btn.Name, btn.Url, btn.SameLine, tx)
+		btn := &Button{ChatId: chatId, NoteName: noteName, Name: btn.Name, Url: btn.Url, SameLine: btn.SameLine}
+		tx.Create(btn)
 	}
 	tx.Commit()
 }
@@ -84,23 +85,14 @@ func RmNote(chatId string, noteName string) bool {
 
 func GetAllChatNotes(chatId string) []Note {
 	notes := make([]Note, 0)
-	SESSION.Where(&Note{ChatId: chatId}).Find(&notes)
+	SESSION.Where("chat_id = ?", chatId).Find(&notes)
 	return notes
-}
-
-func AddNoteButtonToDb(chatId string, noteName string, bName string, url string, sameLine bool, db *gorm.DB) {
-	if db == nil {
-		db = SESSION
-	}
-	btn := &Button{ChatId: chatId, NoteName: noteName, Name: bName, Url: url, SameLine: sameLine}
-	db.FirstOrCreate(btn)
 }
 
 func GetButtons(chatId string, noteName string) []Button {
 	buttons := make([]Button, 0)
-	if SESSION.Where(&Button{ChatId: chatId, Name: noteName}).Find(&buttons).RowsAffected == 0 {
+	if SESSION.Where(Button{ChatId: chatId, NoteName: noteName}).Find(&buttons).RowsAffected == 0 {
 		return nil
 	}
 	return buttons
-
 }
