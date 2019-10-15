@@ -155,7 +155,7 @@ func GetNoteType(msg *ext.Message) (string, string, int, string, []tg_md2html.Bu
 			content = msg.ReplyToMessage.Sticker.FileId
 			dataType = sql.STICKER
 		} else if msg.ReplyToMessage.Document != nil {
-			content = msg.ReplyToMessage.Sticker.FileId
+			content = msg.ReplyToMessage.Document.FileId
 			text, buttons = tg_md2html.MD2HTMLButtons(msgText)
 			dataType = sql.DOCUMENT
 		} else if len(msg.ReplyToMessage.Photo) > 0 {

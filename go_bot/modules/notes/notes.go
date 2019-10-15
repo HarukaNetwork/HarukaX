@@ -79,6 +79,7 @@ func get(bot ext.Bot, u *gotgbot.Update, noteName string, showNone bool, noForma
 					break
 				case sql.DOCUMENT:
 					msg := bot.NewSendableDocument(chatId, text)
+					msg.ParseMode = parseMode
 					msg.ReplyToMessageId = replyId
 					msg.FileId = note.File
 					msg.ReplyMarkup = keyboard
