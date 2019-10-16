@@ -5,9 +5,9 @@ import (
 )
 
 type Federation struct {
-	Id      string `gorm:"primary_key"`
-	OwnerId string
-	FedName string
+	Id        string `gorm:"primary_key"`
+	OwnerId   string
+	FedName   string
 	FedAdmins []FedAdmin `gorm:"foreignkey:Id"`
 	//FedChats []FedChat `gorm:"foreignkey:Id"`
 	FedBans []FedBan `gorm:"foreignkey:FedRef"`

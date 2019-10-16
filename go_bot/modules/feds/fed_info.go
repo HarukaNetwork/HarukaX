@@ -27,7 +27,7 @@ func chatFed(_ ext.Bot, u *gotgbot.Update) error {
 	}
 
 	fed := sql.GetFedInfo(fedId)
-	_, err := msg.ReplyHTMLf("This chat is part of the following federation:" +
+	_, err := msg.ReplyHTMLf("This chat is part of the following federation:"+
 		"\n<b>%v</b> (ID: <code>%v</code>)", fed.FedName, fedId)
 	return err
 }
@@ -55,14 +55,14 @@ func fedInfo(_ ext.Bot, u *gotgbot.Update, args []string) error {
 
 	ownerId, _ := strconv.Atoi(fed.OwnerId)
 
-	text := fmt.Sprintf("<b>Fed info:</b>" +
-		"\nFedID: <code>%v</code>" +
-		"\nName: %v" +
-		"\nCreator: %v" +
-		"\nNumber of admins: <code>%v</code>" +
-		"\nNumber of bans: <code>%v</code>" +
+	text := fmt.Sprintf("<b>Fed info:</b>"+
+		"\nFedID: <code>%v</code>"+
+		"\nName: %v"+
+		"\nCreator: %v"+
+		"\nNumber of admins: <code>%v</code>"+
+		"\nNumber of bans: <code>%v</code>"+
 		"\nNumber of connected chats: <code>%v</code>", fed.Id, fed.FedName, helpers.MentionHtml(ownerId, "this person"),
-		len(sql.GetFedAdmins(fedId)) + 1,
+		len(sql.GetFedAdmins(fedId))+1,
 		len(sql.GetAllFbanUsers(fedId)),
 		len(sql.AllFedChats(fedId)))
 
@@ -140,8 +140,8 @@ func fedStat(bot ext.Bot, u *gotgbot.Update, args []string) error {
 			_, err := msg.ReplyText("Good news! You aren't fedbanned in this federation!")
 			return err
 		} else {
-			text := fmt.Sprintf("%v is fedbanned in <b>%v</b> for the following reason:\n" +
-				" - %v",helpers.MentionHtml(chatMember.Id, chatMember.FirstName) ,fed.FedName, fban.Reason)
+			text := fmt.Sprintf("%v is fedbanned in <b>%v</b> for the following reason:\n"+
+				" - %v", helpers.MentionHtml(chatMember.Id, chatMember.FirstName), fed.FedName, fban.Reason)
 			_, err := msg.ReplyHTML(text)
 			return err
 		}

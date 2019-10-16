@@ -91,6 +91,6 @@ func delMessage(bot ext.Bot, u *gotgbot.Update) error {
 
 func LoadDelete(u *gotgbot.Updater) {
 	defer log.Println("Loading module message_deleting")
-	u.Dispatcher.AddHandler(handlers.NewCommand("purge", purge))
-	u.Dispatcher.AddHandler(handlers.NewCommand("del", delMessage))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("purge", []rune{'/', '!'}, purge))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("del", []rune{'/', '!'}, delMessage))
 }

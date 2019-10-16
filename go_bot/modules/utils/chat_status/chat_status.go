@@ -118,7 +118,7 @@ func CanPin(bot ext.Bot, chat *ext.Chat) bool {
 func CanRestrict(bot ext.Bot, chat *ext.Chat) bool {
 	botChatMember, err := chat.GetMember(bot.Id)
 	error_handling.HandleErr(err)
-	if !botChatMember.CanRestrictMembers{
+	if !botChatMember.CanRestrictMembers {
 		_, err := bot.SendMessage(chat.Id, "I can't restrict people here! Make sure I'm admin and can appoint new admins.")
 		error_handling.HandleErr(err)
 		return false

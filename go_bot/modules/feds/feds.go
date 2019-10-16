@@ -88,28 +88,28 @@ func fedBan(bot ext.Bot, u *gotgbot.Update, args []string) error {
 				_, err = bot.KickChatMember(chatId, userId)
 				error_handling.HandleErr(err)
 
-				_, err = bot.SendMessageHTML(chatId, fmt.Sprintf("User %v is banned in the current federation " +
-					"(%v), and so has been removed." +
+				_, err = bot.SendMessageHTML(chatId, fmt.Sprintf("User %v is banned in the current federation "+
+					"(%v), and so has been removed."+
 					"\n<b>Reason</b>: %v", helpers.MentionHtml(member.Id, member.FirstName), fed.FedName, reason))
 				error_handling.HandleErr(err)
 			}
 		}(bot, member, userId, fed, reason)
 
-		_, err = msg.ReplyHTMLf("<b>New FedBan</b>" +
-			"\n<b>Fed</b>: %v" +
-			"\n<b>FedAdmin</b>: %v" +
-			"\n<b>User</b>: %v" +
-			"\n<b>User ID</b>: <code>%v</code>" +
+		_, err = msg.ReplyHTMLf("<b>New FedBan</b>"+
+			"\n<b>Fed</b>: %v"+
+			"\n<b>FedAdmin</b>: %v"+
+			"\n<b>User</b>: %v"+
+			"\n<b>User ID</b>: <code>%v</code>"+
 			"\n<b>Reason</b>: %v", fed.FedName, helpers.MentionHtml(user.Id, user.FirstName), helpers.MentionHtml(member.Id, member.FirstName),
 			member.Id, reason)
 		return err
 	} else {
-		_, err := msg.ReplyHTMLf("<b>FedBan Reason update</b>" +
-			"\n<b>Fed</b>: %v" +
-			"\n<b>FedAdmin</b>: %v" +
-			"\n<b>User</b>: %v" +
-			"\n<b>User ID</b>: <code>%v</code>" +
-			"\n<b>Previous Reason</b>: %v" +
+		_, err := msg.ReplyHTMLf("<b>FedBan Reason update</b>"+
+			"\n<b>Fed</b>: %v"+
+			"\n<b>FedAdmin</b>: %v"+
+			"\n<b>User</b>: %v"+
+			"\n<b>User ID</b>: <code>%v</code>"+
+			"\n<b>Previous Reason</b>: %v"+
 			"\n<b>New Reason</b>: %v", fed.FedName, helpers.MentionHtml(user.Id, user.FirstName), helpers.MentionHtml(member.Id, member.FirstName),
 			member.Id, fbannedUser.Reason, reason)
 		return err
@@ -166,10 +166,10 @@ func unfedban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		}
 	}(bot, member, userId, fed)
 
-	_, err := msg.ReplyHTMLf("<b>New un-FedBan</b>" +
-		"\n<b>Fed</b>: %v" +
-		"\n<b>FedAdmin</b>: %v" +
-		"\n<b>User</b>: %v" +
+	_, err := msg.ReplyHTMLf("<b>New un-FedBan</b>"+
+		"\n<b>Fed</b>: %v"+
+		"\n<b>FedAdmin</b>: %v"+
+		"\n<b>User</b>: %v"+
 		"\n<b>User ID</b>: <code>%v</code>", fed.FedName, helpers.MentionHtml(user.Id, user.FirstName),
 		helpers.MentionHtml(member.Id, member.FirstName),
 		member.Id)
@@ -201,8 +201,8 @@ func fedCheckBan(bot ext.Bot, u *gotgbot.Update) error {
 		error_handling.HandleErr(err)
 		_, err = bot.KickChatMember(chat.Id, user.Id)
 		error_handling.HandleErr(err)
-		_, err = bot.SendMessageHTML(chat.Id, fmt.Sprintf("User %v is banned in the current federation " +
-			"(%v), and so has been removed." +
+		_, err = bot.SendMessageHTML(chat.Id, fmt.Sprintf("User %v is banned in the current federation "+
+			"(%v), and so has been removed."+
 			"\n<b>Reason</b>: %v", helpers.MentionHtml(user.Id, user.FirstName), fed.FedName, member.Reason))
 		return err
 	}
@@ -211,28 +211,28 @@ func fedCheckBan(bot ext.Bot, u *gotgbot.Update) error {
 
 func LoadFeds(u *gotgbot.Updater) {
 	defer log.Println("Loading module feds")
-	u.Dispatcher.AddHandler(handlers.NewCommand("newfed", newFed))
-	u.Dispatcher.AddHandler(handlers.NewCommand("delfed", delFed))
-	u.Dispatcher.AddHandler(handlers.NewCommand("chatfed", chatFed))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("joinfed", joinFed))
-	u.Dispatcher.AddHandler(handlers.NewCommand("leavefed", leaveFed))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("newfed", []rune{'/', '!'}, newFed))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("delfed", []rune{'/', '!'}, delFed))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("chatfed", []rune{'/', '!'}, chatFed))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("joinfed", []rune{'/', '!'}, joinFed))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("leavefed", []rune{'/', '!'}, leaveFed))
 
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedpromote", fedPromote))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("feddemote", fedDemote))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedinfo", fedInfo))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedadmins", fedAdmins))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedban", fedBan))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("unfedban", unfedban))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fedstat", fedStat))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("fedpromote", []rune{'/', '!'}, fedPromote))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("feddemote", []rune{'/', '!'}, fedDemote))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("fedinfo", []rune{'/', '!'}, fedInfo))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("fedadmins", []rune{'/', '!'}, fedAdmins))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("fedban", []rune{'/', '!'}, fedBan))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("unfedban", []rune{'/', '!'}, unfedban))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("fedstat", []rune{'/', '!'}, fedStat))
 
 	// Shorter aliases
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fpromote", fedPromote))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fdemote", fedDemote))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("finfo", fedInfo))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fadmins", fedAdmins))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fban", fedBan))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("unfban", unfedban))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("fbanstat", fedStat))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("fpromote", []rune{'/', '!'}, fedPromote))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("fdemote", []rune{'/', '!'}, fedDemote))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("finfo", []rune{'/', '!'}, fedInfo))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("fadmins", []rune{'/', '!'}, fedAdmins))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("fban", []rune{'/', '!'}, fedBan))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("unfban", []rune{'/', '!'}, unfedban))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("fbanstat", []rune{'/', '!'}, fedStat))
 
 	u.Dispatcher.AddHandler(handlers.NewMessage(Filters.All, fedCheckBan))
 }

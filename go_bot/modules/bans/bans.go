@@ -227,9 +227,9 @@ func unban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 
 func LoadBans(u *gotgbot.Updater) {
 	defer log.Println("Loading module bans")
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("tban", tempBan))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("ban", ban))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("kick", kick))
-	u.Dispatcher.AddHandler(handlers.NewCommand("kickme", kickme))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("unban", unban))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("tban", []rune{'/', '!'}, tempBan))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("ban", []rune{'/', '!'}, ban))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("kick", []rune{'/', '!'}, kick))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("kickme", []rune{'/', '!'}, kickme))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("unban", []rune{'/', '!'}, unban))
 }

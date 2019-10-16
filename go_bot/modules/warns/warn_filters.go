@@ -109,7 +109,7 @@ func listWarnFilters(_ ext.Bot, u *gotgbot.Update) error {
 	filterList := "<b>Current warning filters in this chat:</b>\n"
 	for _, handler := range allHandlers {
 		entry := fmt.Sprintf(" - %v\n", html.EscapeString(handler.Keyword))
-		if len(entry) + len(filterList) > 4096 {
+		if len(entry)+len(filterList) > 4096 {
 			_, err := u.EffectiveMessage.ReplyHTML(filterList)
 			error_handling.HandleErr(err)
 			filterList = entry

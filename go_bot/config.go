@@ -10,14 +10,14 @@ import (
 )
 
 type Config struct {
-	BotName string
-	ApiKey string
-	OwnerName string
-	OwnerId int
-	SudoUsers []string
+	BotName     string
+	ApiKey      string
+	OwnerName   string
+	OwnerId     int
+	SudoUsers   []string
 	LoadPlugins []string
-	SqlUri string
-	Heroku bool
+	SqlUri      string
+	Heroku      bool
 }
 
 var BotConfig Config
@@ -36,7 +36,7 @@ func init() {
 		log.Fatal("Missing bot name")
 	}
 
-	returnConfig.ApiKey, ok = os.LookupEnv("BOT_API_KEY")// If env var is empty
+	returnConfig.ApiKey, ok = os.LookupEnv("BOT_API_KEY") // If env var is empty
 	if !ok {
 		log.Fatal("Missing API key")
 	}
@@ -59,7 +59,6 @@ func init() {
 	}
 
 	_, returnConfig.Heroku = os.LookupEnv("HEROKU")
-
 
 	BotConfig = returnConfig
 

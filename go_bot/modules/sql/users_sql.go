@@ -35,7 +35,7 @@ func UpdateUser(userId int, username string, chatId string, chatName string) {
 
 	// upsert user
 	user := &User{}
-	SESSION.Where(User{UserId:userId}).Assign(User{UserName:username}).FirstOrCreate(user)
+	SESSION.Where(User{UserId: userId}).Assign(User{UserName: username}).FirstOrCreate(user)
 
 	if chatId == "nil" || chatName == "nil" {
 		return
@@ -43,7 +43,7 @@ func UpdateUser(userId int, username string, chatId string, chatName string) {
 
 	// upsert chat
 	chat := &Chat{}
-	SESSION.Where(Chat{ChatId:chatId}).Assign(Chat{ChatName:chatName}).FirstOrCreate(chat)
+	SESSION.Where(Chat{ChatId: chatId}).Assign(Chat{ChatName: chatName}).FirstOrCreate(chat)
 }
 
 func GetUserIdByName(username string) *User {

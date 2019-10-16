@@ -25,7 +25,7 @@ func SplitMessage(msg string) []string {
 		smallMsg := ""
 		result := make([]string, 0)
 		for _, line := range lines {
-			if len(smallMsg) + len(line) < MaxMessageLength {
+			if len(smallMsg)+len(line) < MaxMessageLength {
 				smallMsg += line + "\n"
 			} else {
 				result = append(result, smallMsg)
@@ -50,8 +50,8 @@ func SplitQuotes(text string) []string {
 				if text[counter] == '\\' {
 					counter++
 				} else if text[counter] == text[0] || (string(text[0]) == smartOpen && string(text[counter]) == smartClose) {
-						broke = true
-						break
+					broke = true
+					break
 				}
 				counter++
 			}
@@ -60,7 +60,7 @@ func SplitQuotes(text string) []string {
 			}
 
 			key := RemoveEscapes(strings.TrimSpace(text[1:counter]))
-			rest := strings.TrimSpace(text[counter + 1:])
+			rest := strings.TrimSpace(text[counter+1:])
 
 			if key == "" {
 				key = string(text[0]) + string(text[0])
@@ -97,10 +97,10 @@ func BuildKeyboard(buttons []sql.Button) [][]ext.InlineKeyboardButton {
 	keyb := make([][]ext.InlineKeyboardButton, 0)
 	for _, btn := range buttons {
 		if btn.SameLine && len(keyb) > 0 {
-			keyb[len(keyb) - 1] = append(keyb[len(keyb) - 1], ext.InlineKeyboardButton{Text:btn.Name, Url:btn.Url})
+			keyb[len(keyb)-1] = append(keyb[len(keyb)-1], ext.InlineKeyboardButton{Text: btn.Name, Url: btn.Url})
 		} else {
 			k := make([]ext.InlineKeyboardButton, 1)
-			k[0] = ext.InlineKeyboardButton{Text:btn.Name, Url:btn.Url}
+			k[0] = ext.InlineKeyboardButton{Text: btn.Name, Url: btn.Url}
 			keyb = append(keyb, k)
 		}
 	}
@@ -136,13 +136,12 @@ func GetNoteType(msg *ext.Message) (string, string, int, string, []tg_md2html.Bu
 
 	for _, ent := range entities {
 		if ent.Type == "code" {
-			rawText = rawText[:ent.Offset + timesInserted] + "`" + rawText[ent.Offset + timesInserted:]
+			rawText = rawText[:ent.Offset+timesInserted] + "`" + rawText[ent.Offset+timesInserted:]
 			timesInserted++
-			rawText = rawText[:(ent.Offset + ent.Length + (timesInserted))] + "`" + rawText[(ent.Offset + ent.Length + (timesInserted)):]
+			rawText = rawText[:(ent.Offset+ent.Length+(timesInserted))] + "`" + rawText[(ent.Offset+ent.Length+(timesInserted)):]
 			timesInserted++
 		}
 	}
-
 
 	args := strings.SplitN(msg.Text, " ", 3)
 	noteName := args[1]
@@ -178,7 +177,7 @@ func GetNoteType(msg *ext.Message) (string, string, int, string, []tg_md2html.Bu
 			text, buttons = tg_md2html.MD2HTMLButtons(rawText)
 			dataType = sql.DOCUMENT
 		} else if len(msg.ReplyToMessage.Photo) > 0 {
-			content = msg.ReplyToMessage.Photo[len(msg.ReplyToMessage.Photo) - 1].FileId
+			content = msg.ReplyToMessage.Photo[len(msg.ReplyToMessage.Photo)-1].FileId
 			text, buttons = tg_md2html.MD2HTMLButtons(rawText)
 			dataType = sql.PHOTO
 		} else if msg.ReplyToMessage.Audio != nil {

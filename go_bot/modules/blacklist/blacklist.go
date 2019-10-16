@@ -181,10 +181,10 @@ var blacklistMessage = handlers.NewMessage(customFilter, delBlacklist)
 
 func LoadBlacklist(u *gotgbot.Updater) {
 	defer log.Println("Loading module blacklist")
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("blacklist", blacklist))
-	u.Dispatcher.AddHandler(handlers.NewCommand("addblacklist", addBlacklist))
-	u.Dispatcher.AddHandler(handlers.NewCommand("rmblacklist", unblacklist))
-	u.Dispatcher.AddHandler(handlers.NewCommand("unblacklist", unblacklist))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("blacklist", []rune{'/', '!'}, blacklist))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("addblacklist", []rune{'/', '!'}, addBlacklist))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("rmblacklist", []rune{'/', '!'}, unblacklist))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("unblacklist", []rune{'/', '!'}, unblacklist))
 	blacklistMessage.AllowEdited = true
 	u.Dispatcher.AddHandlerToGroup(blacklistMessage, 11)
 }

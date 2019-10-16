@@ -216,7 +216,7 @@ func listNotes(_ ext.Bot, u *gotgbot.Update) error {
 	msg := "<code>Notes in chat:</code>\n"
 	for _, note := range noteList {
 		noteName := html.EscapeString(fmt.Sprintf(" - %v\n", note.Name))
-		if len(msg) + len(noteName) > helpers.MaxMessageLength {
+		if len(msg)+len(noteName) > helpers.MaxMessageLength {
 			_, err := u.EffectiveMessage.ReplyHTML(msg)
 			msg = ""
 			error_handling.HandleErr(err)
@@ -236,10 +236,10 @@ func listNotes(_ ext.Bot, u *gotgbot.Update) error {
 
 func LoadNotes(u *gotgbot.Updater) {
 	defer log.Println("Loading module notes")
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("get", cmdGet))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("get", []rune{'/', '!'}, cmdGet))
 	u.Dispatcher.AddHandler(handlers.NewRegex(`^#[^\s]+`, hashGet))
-	u.Dispatcher.AddHandler(handlers.NewCommand("save", save))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("clear", clear))
-	u.Dispatcher.AddHandler(handlers.NewCommand("notes", listNotes))
-	u.Dispatcher.AddHandler(handlers.NewCommand("saved", listNotes))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("save", []rune{'/', '!'}, save))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("clear", []rune{'/', '!'}, clear))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("notes", []rune{'/', '!'}, listNotes))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("saved", []rune{'/', '!'}, listNotes))
 }

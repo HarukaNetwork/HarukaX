@@ -163,7 +163,7 @@ func warns(_ ext.Bot, u *gotgbot.Update, args []string) error {
 	message := u.EffectiveMessage
 	chat := u.EffectiveChat
 	userId := extraction.ExtractUser(message, args)
-	if userId == 0{
+	if userId == 0 {
 		userId = u.EffectiveUser.Id
 	}
 	numWarns, reasons := sql.GetWarns(strconv.Itoa(userId), strconv.Itoa(chat.Id))
@@ -194,21 +194,21 @@ func warns(_ ext.Bot, u *gotgbot.Update, args []string) error {
 	return nil
 }
 
-var TextAndGroupFilter handlers.FilterFunc = func (message *ext.Message) bool {
+var TextAndGroupFilter handlers.FilterFunc = func(message *ext.Message) bool {
 	return (extraction.ExtractText(message) != "") && (Filters.Group(message))
 }
 
 func LoadWarns(u *gotgbot.Updater) {
 	defer log.Println("Loading module warns")
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("warn", warnUser))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("warn", []rune{'/', '!'}, warnUser))
 	u.Dispatcher.AddHandler(handlers.NewCallback("rmWarn", button))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("resetwarns", resetWarns))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("warns", warns))
-	u.Dispatcher.AddHandler(handlers.NewCommand("addwarn", addWarnFilter))
-	u.Dispatcher.AddHandler(handlers.NewCommand("nowarn", removeWarnFilter))
-	u.Dispatcher.AddHandler(handlers.NewCommand("rmwarn", removeWarnFilter)) // Just an alias for nowarn
-	u.Dispatcher.AddHandler(handlers.NewCommand("warnlist", listWarnFilters))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("warnlimit", setWarnLimit))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("strongwarn", setWarnStrength))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("resetwarns", []rune{'/', '!'}, resetWarns))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("warns", []rune{'/', '!'}, warns))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("addwarn", []rune{'/', '!'}, addWarnFilter))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("nowarn", []rune{'/', '!'}, removeWarnFilter))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("rmwarn", []rune{'/', '!'}, removeWarnFilter)) // Just an alias for nowarn
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("warnlist", []rune{'/', '!'}, listWarnFilters))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("warnlimit", []rune{'/', '!'}, setWarnLimit))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("strongwarn", []rune{'/', '!'}, setWarnStrength))
 	u.Dispatcher.AddHandlerToGroup(handlers.NewMessage(TextAndGroupFilter, replyFilter), 9)
 }

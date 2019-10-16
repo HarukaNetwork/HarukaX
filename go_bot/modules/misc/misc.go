@@ -95,7 +95,7 @@ func info(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	if fed != nil {
 		fban := sql.GetFbanUser(fed.Id, strconv.Itoa(userId))
 		if fban != nil {
-			text += fmt.Sprintf("\n\nThis user is fedbanned in the current federation - " +
+			text += fmt.Sprintf("\n\nThis user is fedbanned in the current federation - "+
 				"<code>%v</code>", fed.FedName)
 		} else {
 			text += "\n\nThis user is not fedbanned in the current federation."
@@ -142,7 +142,7 @@ func ping(_ ext.Bot, u *gotgbot.Update) error {
 
 func LoadMisc(u *gotgbot.Updater) {
 	defer log.Println("Loading module misc")
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("id", getId))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("info", info))
-	u.Dispatcher.AddHandler(handlers.NewCommand("ping", ping))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("id", []rune{'/', '!'}, getId))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("info", []rune{'/', '!'}, info))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("ping", []rune{'/', '!'}, ping))
 }

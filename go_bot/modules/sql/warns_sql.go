@@ -12,7 +12,6 @@ type Warns struct {
 	Reasons  pq.StringArray `gorm:"type:varchar(64)[]"`
 }
 
-
 func (w Warns) String() string {
 	return fmt.Sprintf("<%v warns for %s in %s for reasons %v>", w.NumWarns, w.UserId, w.ChatId, w.Reasons)
 }

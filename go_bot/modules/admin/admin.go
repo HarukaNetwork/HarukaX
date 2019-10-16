@@ -25,7 +25,7 @@ func promote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	if !chat_status.RequireBotAdmin(chat, message) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireUserAdmin(chat, message,  user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, message, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
 	if !chat_status.CanPromote(bot, chat) {
@@ -226,10 +226,10 @@ func adminlist(_ ext.Bot, u *gotgbot.Update) error {
 
 func LoadAdmin(u *gotgbot.Updater) {
 	defer log.Println("Loading module admin")
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("promote", promote))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("demote", demote))
-	u.Dispatcher.AddHandler(handlers.NewArgsCommand("pin", pin))
-	u.Dispatcher.AddHandler(handlers.NewCommand("unpin", unpin))
-	u.Dispatcher.AddHandler(handlers.NewCommand("invitelink", invitelink))
-	u.Dispatcher.AddHandler(handlers.NewCommand("adminlist", adminlist))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("promote", []rune{'/', '!'}, promote))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("demote", []rune{'/', '!'}, demote))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("pin", []rune{'/', '!'}, pin))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("unpin", []rune{'/', '!'}, unpin))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("invitelink", []rune{'/', '!'}, invitelink))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("adminlist", []rune{'/', '!'}, adminlist))
 }
