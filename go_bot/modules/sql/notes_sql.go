@@ -78,8 +78,8 @@ func RmNote(chatId string, noteName string) bool {
 		tx.Delete(&btn)
 	}
 
-	SESSION.Delete(note)
-	SESSION.Commit()
+	tx.Delete(note)
+	tx.Commit()
 	return true
 }
 
