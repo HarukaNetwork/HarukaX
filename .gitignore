@@ -7,6 +7,7 @@
 *.so
 *.dylib
 
+
 # Test binary, build with `go test -c`
 *.test
 
@@ -71,4 +72,7 @@ fabric.properties
 
 # Idea
 .idea/
+
+# Cross platform binaries
+build
 
