@@ -34,10 +34,18 @@ func ban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	member, err := chat.GetMember(userId)
 	if err != nil {
 		if err.Error() == "User not found" {
-			_, err := message.ReplyText("This user is ded mate.")
-			return err
+			_, err = message.ReplyText("This user is ded mate.")
 		}
+		return err
 	}
+
+	userMember,_ := chat.GetMember(user.Id)
+	if !userMember.CanRestrictMembers {
+		_, err = message.ReplyText("You don't have permissions to ban users!")
+		return err
+	}
+
+
 	if chat_status.IsUserBanProtected(chat, userId, member) {
 		_, err := message.ReplyText("One day I'll find out how to work around the bot API. Today is not that day.")
 		return err
@@ -79,10 +87,17 @@ func tempBan(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	member, err := chat.GetMember(userId)
 	if err != nil {
 		if err.Error() == "User not found" {
-			_, err := message.ReplyText("This user is ded mate.")
-			return err
+			_, err = message.ReplyText("This user is ded mate.")
 		}
+		return err
 	}
+
+	userMember,_ := chat.GetMember(user.Id)
+	if !userMember.CanRestrictMembers {
+		_, err = message.ReplyText("You don't have permissions to ban users!")
+		return err
+	}
+
 	if chat_status.IsUserBanProtected(chat, userId, member) {
 		_, err := message.ReplyText("One day I'll find out how to work around the bot API. Today is not that day.")
 		return err
@@ -138,10 +153,17 @@ func kick(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	var member, err = chat.GetMember(userId)
 	if err != nil {
 		if err.Error() == "User not found" {
-			_, err := message.ReplyText("This user is ded mate.")
-			return err
+			_, err = message.ReplyText("This user is ded mate.")
 		}
+		return err
 	}
+
+	userMember,_ := chat.GetMember(user.Id)
+	if !userMember.CanRestrictMembers {
+		_, err = message.ReplyText("You don't have permissions to ban users!")
+		return err
+	}
+
 	if chat_status.IsUserBanProtected(chat, userId, member) {
 		_, err := message.ReplyText("One day I'll find out how to work around the bot API. Today is not that day.")
 		return err
@@ -206,6 +228,12 @@ func unban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	_, err := chat.GetMember(userId)
 	if err != nil {
 		_, err := message.ReplyText("This user is ded m8.")
+		return err
+	}
+
+	userMember,_ := chat.GetMember(user.Id)
+	if !userMember.CanRestrictMembers {
+		_, err = message.ReplyText("You don't have permissions to unban users!")
 		return err
 	}
 
