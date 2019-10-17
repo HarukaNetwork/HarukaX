@@ -113,6 +113,7 @@ func button(bot ext.Bot, u *gotgbot.Update) error {
 
 	// Check permissions
 	if !chat_status.IsUserAdmin(chat, user.Id, nil) {
+		_, _ = bot.AnswerCallbackQueryText(query.Id, "You need to be an admin to do this.", true)
 		return gotgbot.EndGroups{}
 	}
 
