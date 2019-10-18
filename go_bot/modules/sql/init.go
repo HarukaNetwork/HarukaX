@@ -19,6 +19,12 @@ func init() {
 	error_handling.FatalError(err)
 	SESSION = db
 
+	if go_bot.BotConfig.Heroku {
+		db.DB().SetMaxOpenConns(20)
+	} else {
+		db.DB().SetMaxOpenConns(100)
+	}
+
 	log.Println("Database connected")
 
 	// Create tables if they don't exist
