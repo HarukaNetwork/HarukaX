@@ -34,7 +34,8 @@ type WarnSettings struct {
 
 func WarnUser(userId string, chatId string, reason string) (int, []string) {
 	warnedUser := &Warns{UserId: userId, ChatId: chatId}
-	SESSION.FirstOrInit(warnedUser)
+	tx := SESSION.Begin()
+	tx.FirstOrInit(warnedUser)
 
 	// Increment warns
 	warnedUser.NumWarns++
@@ -48,7 +49,8 @@ func WarnUser(userId string, chatId string, reason string) (int, []string) {
 	}
 
 	// Upsert warn
-	SESSION.Save(warnedUser)
+	tx.Save(warnedUser)
+	tx.Commit()
 
 	return warnedUser.NumWarns, warnedUser.Reasons
 }
@@ -56,26 +58,32 @@ func WarnUser(userId string, chatId string, reason string) (int, []string) {
 func RemoveWarn(userId string, chatId string) bool {
 	removed := false
 	warnedUser := &Warns{UserId: userId, ChatId: chatId}
-	SESSION.FirstOrInit(warnedUser)
+	tx := SESSION.Begin()
+
+	tx.FirstOrInit(warnedUser)
 
 	// only remove if user has warns
 	if warnedUser.NumWarns > 0 {
 		warnedUser.NumWarns -= 1
-		SESSION.Save(warnedUser)
+		tx.Save(warnedUser)
 		removed = true
 	}
+	tx.Commit()
 
 	return removed
 }
 
 func ResetWarns(userId string, chatId string) {
 	warnedUser := &Warns{UserId: userId, ChatId: chatId}
-	SESSION.FirstOrInit(warnedUser)
+	tx := SESSION.Begin()
+
+	tx.FirstOrInit(warnedUser)
 
 	// resetting all warn fields
 	warnedUser.NumWarns = 0
 	warnedUser.Reasons = make([]string, 0)
-	SESSION.Save(warnedUser)
+	tx.Save(warnedUser)
+	tx.Commit()
 }
 
 func GetWarns(userId string, chatId string) (int, []string) {
@@ -117,20 +125,23 @@ func GetWarnFilter(chatId string, keyword string) *WarnFilters {
 
 func SetWarnLimit(chatId string, warnLimit int) {
 	warnSetting := &WarnSettings{ChatId: chatId}
+	tx := SESSION.Begin()
 	// init record if it doesn't exist
-	SESSION.FirstOrInit(warnSetting)
+	tx.FirstOrInit(warnSetting)
 	warnSetting.WarnLimit = warnLimit
 	// upsert record
-	SESSION.Save(warnSetting)
+	tx.Save(warnSetting)
 }
 
 func SetWarnStrength(chatId string, softWarn bool) {
 	warnSetting := &WarnSettings{ChatId: chatId, SoftWarn: softWarn}
+	tx := SESSION.Begin()
 	// init record if it doesn't exist
-	SESSION.FirstOrInit(warnSetting)
+	tx.FirstOrInit(warnSetting)
 	warnSetting.SoftWarn = softWarn
 	// upsert record
-	SESSION.Save(warnSetting)
+	tx.Save(warnSetting)
+	tx.Commit()
 }
 
 func GetWarnSetting(chatId string) (int, bool) {
