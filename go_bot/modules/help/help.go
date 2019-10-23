@@ -113,6 +113,14 @@ func buttonHandler(b ext.Bot, u *gotgbot.Update) error {
 				"- /demote: demotes the user replied to\n"
 			break
 		case "bans":
+			msg.Text = "Here is the help for the <b>Bans</b> module:\n\n" +
+				" - /kickme: kicks the user who issued the command\n\n" +
+				"<b>Admin only</b>:\n" +
+				" - /ban <userhandle>: bans a user. (via handle, or reply)\n" +
+				" - /tban <userhandle> x(m/h/d): bans a user for x time. (via handle, or reply). m = minutes, h = hours," +
+				" d = days.\n" +
+				"- /unban <userhandle>: unbans a user. (via handle, or reply)" +
+				" - /kick <userhandle>: kicks a user, (via handle, or reply)"
 			break
 		case "blacklist":
 			break
