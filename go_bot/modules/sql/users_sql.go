@@ -32,18 +32,20 @@ func EnsureBotInDb(u *gotgbot.Updater) {
 
 func UpdateUser(userId int, username string, chatId string, chatName string) {
 	username = strings.ToLower(username)
+	tx := SESSION.Begin()
 
 	// upsert user
-	user := &User{}
-	SESSION.Where(User{UserId: userId}).Assign(User{UserName: username}).FirstOrCreate(user)
+	user := &User{UserId: userId, UserName: username}
+	tx.Save(user)
 
 	if chatId == "nil" || chatName == "nil" {
 		return
 	}
 
 	// upsert chat
-	chat := &Chat{}
-	SESSION.Where(Chat{ChatId: chatId}).Assign(Chat{ChatName: chatName}).FirstOrCreate(chat)
+	chat := &Chat{ChatId: chatId, ChatName: chatName}
+	tx.Save(chat)
+	tx.Commit()
 }
 
 func GetUserIdByName(username string) *User {
