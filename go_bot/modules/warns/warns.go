@@ -122,7 +122,8 @@ func button(bot ext.Bot, u *gotgbot.Update) error {
 		chat := u.EffectiveChat
 		res := sql.RemoveWarn(userId, strconv.Itoa(chat.Id))
 		if res {
-			msg := bot.NewSendableEditMessageText(chat.Id, u.EffectiveMessage.MessageId, fmt.Sprintf("Warn removed by %v.", helpers.MentionHtml(user.Id, user.FirstName)))
+			msg := bot.NewSendableEditMessageText(chat.Id, u.EffectiveMessage.MessageId,
+				fmt.Sprintf("Warn removed by %v.", helpers.MentionHtml(user.Id, user.FirstName)))
 			msg.ParseMode = parsemode.Html
 			_, err := msg.Send()
 			return err
