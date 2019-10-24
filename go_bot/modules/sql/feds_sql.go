@@ -70,13 +70,13 @@ func DelFed(fedId string) {
 	tx.Where("id = ?", fedId).Delete(fed)
 
 	chat := &FedChat{}
-	tx.Model(chat).Where("id = ?", fedId).Delete(chat)
+	tx.Model(chat).Where("fed_ref = ?", fedId).Delete(chat)
 
 	admins := &FedAdmin{}
-	tx.Model(&admins).Where("id = ?", fedId).Delete(admins)
+	tx.Model(&admins).Where("fed_ref = ?", fedId).Delete(admins)
 
 	bans := &FedBan{}
-	tx.Model(bans).Where("id = ?", fedId).Delete(bans)
+	tx.Model(bans).Where("fed_ref = ?", fedId).Delete(bans)
 
 	tx.Commit()
 } // No dirty reads
