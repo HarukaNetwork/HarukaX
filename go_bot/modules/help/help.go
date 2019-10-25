@@ -106,7 +106,7 @@ func help(b ext.Bot, u *gotgbot.Update) error {
 	return err
 }
 
-func markdownHelp(b ext.Bot, u *gotgbot.Update) error {
+func markdownHelp(_ ext.Bot, u *gotgbot.Update) error {
 	chat := u.EffectiveChat
 	if chat.Type != "private" {
 		_, err := u.EffectiveMessage.ReplyText("This command is meant to be used in PM!")
