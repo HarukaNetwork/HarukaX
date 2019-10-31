@@ -44,6 +44,11 @@ func promote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	message := u.EffectiveMessage
 	user := u.EffectiveUser
 
+	// permission checks
+	if chat.Type == "private" {
+		_, err := message.ReplyText("This command is meant to be used in a group!")
+		return err
+	}
 	if !chat_status.RequireBotAdmin(chat, message) {
 		return gotgbot.EndGroups{}
 	}
@@ -97,6 +102,11 @@ func demote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	message := u.EffectiveMessage
 	user := u.EffectiveUser
 
+	// permission checks
+	if chat.Type == "private" {
+		_, err := message.ReplyText("This command is meant to be used in a group!")
+		return err
+	}
 	if !chat_status.RequireBotAdmin(chat, message) {
 		return gotgbot.EndGroups{}
 	}
@@ -143,6 +153,10 @@ func pin(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	msg := u.EffectiveMessage
 
 	// Check permissions
+	if chat.Type == "private" {
+		_, err := msg.ReplyText("This command is meant to be used in a group!")
+		return err
+	}
 	if !chat_status.RequireUserAdmin(chat, msg, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
@@ -176,6 +190,10 @@ func unpin(bot ext.Bot, u *gotgbot.Update) error {
 	msg := u.EffectiveMessage
 
 	// Check permissions
+	if chat.Type == "private" {
+		_, err := msg.ReplyText("This command is meant to be used in a group!")
+		return err
+	}
 	if !chat_status.RequireUserAdmin(chat, msg, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
@@ -196,6 +214,10 @@ func invitelink(bot ext.Bot, u *gotgbot.Update) error {
 	message := u.EffectiveMessage
 
 	// Check permissions
+	if chat.Type == "private" {
+		_, err := message.ReplyText("This command is meant to be used in a group!")
+		return err
+	}
 	if !chat_status.RequireUserAdmin(chat, message, user.Id, nil) {
 		return gotgbot.EndGroups{}
 	}
@@ -225,6 +247,11 @@ func invitelink(bot ext.Bot, u *gotgbot.Update) error {
 }
 
 func adminlist(_ ext.Bot, u *gotgbot.Update) error {
+	if u.EffectiveChat.Type == "private" {
+		_, err := u.EffectiveMessage.ReplyText("This command is meant to be used in a group!")
+		return err
+	}
+
 	admins, err := u.EffectiveChat.GetAdministrators()
 	error_handling.HandleErr(err)
 	var addendum string
@@ -236,7 +263,9 @@ func adminlist(_ ext.Bot, u *gotgbot.Update) error {
 	text := fmt.Sprintf("Admins in <b>%s</b>:", addendum)
 	for _, admin := range admins {
 		user := admin.User
-		name := string_handling.FormatText("[{urltext}](tg://user?id={userid})", "{urltext}", user.FirstName+user.LastName, "{userid}", strconv.Itoa(user.Id))
+		name := string_handling.FormatText("[{urltext}](tg://user?id={userid})", "{urltext}",
+			user.FirstName+user.LastName, "{userid}", strconv.Itoa(user.Id))
+
 		if user.Username != "" {
 			name = html.EscapeString("@" + user.Username)
 			text += fmt.Sprintf("\n - %s", name)

@@ -1,4 +1,6 @@
 # Ginko
+[![Actions Status](https://github.com/ATechnoHazard/ginko/workflows/CI/badge.svg)](https://github.com/ATechnoHazard/ginko/actions)
+
 Telegram bot written in Go. Currently in alpha. Contributions are welcome.
 
 A modular group management bot, written with the purpose of being highly concurrent.

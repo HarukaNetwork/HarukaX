@@ -86,17 +86,21 @@ func NewFed(ownerId string, fedId string, fedName string) bool {
 } // No dirty read
 
 func DelFed(fedId string) {
+	tx := SESSION.Begin()
+
 	fed := &Federation{}
-	SESSION.Where("id = ?", fedId).Delete(fed)
+	tx.Where("id = ?", fedId).Delete(fed)
 
 	chat := &FedChat{}
-	SESSION.Model(chat).Where("id = ?", fedId).Delete(chat)
+	tx.Model(chat).Where("fed_ref = ?", fedId).Delete(chat)
 
 	admins := &FedAdmin{}
-	SESSION.Model(&admins).Where("id = ?", fedId).Delete(admins)
+	tx.Model(&admins).Where("fed_ref = ?", fedId).Delete(admins)
 
 	bans := &FedBan{}
-	SESSION.Model(bans).Where("id = ?", fedId).Delete(bans)
+	tx.Model(bans).Where("fed_ref = ?", fedId).Delete(bans)
+
+	tx.Commit()
 } // No dirty reads
 
 func IsUserFedAdmin(fedId string, userId string) string {
