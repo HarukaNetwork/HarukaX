@@ -67,7 +67,7 @@ func ban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	}
 
 	userMember, _ := chat.GetMember(user.Id)
-	if !userMember.CanRestrictMembers {
+	if !userMember.CanRestrictMembers && userMember.Status != "creator" {
 		_, err = message.ReplyText("You don't have permissions to ban users!")
 		return err
 	}
@@ -124,7 +124,7 @@ func tempBan(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	}
 
 	userMember, _ := chat.GetMember(user.Id)
-	if !userMember.CanRestrictMembers {
+	if !userMember.CanRestrictMembers && userMember.Status != "creator" {
 		_, err = message.ReplyText("You don't have permissions to ban users!")
 		return err
 	}
@@ -195,7 +195,7 @@ func kick(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	}
 
 	userMember, _ := chat.GetMember(user.Id)
-	if !userMember.CanRestrictMembers {
+	if !userMember.CanRestrictMembers && userMember.Status != "creator" {
 		_, err = message.ReplyText("You don't have permissions to ban users!")
 		return err
 	}
@@ -278,7 +278,7 @@ func unban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	}
 
 	userMember, _ := chat.GetMember(user.Id)
-	if !userMember.CanRestrictMembers {
+	if !userMember.CanRestrictMembers && userMember.Status != "creator" {
 		_, err = message.ReplyText("You don't have permissions to unban users!")
 		return err
 	}
