@@ -19,12 +19,12 @@ import (
 // via an update channel for them to be handled.
 type Updater struct {
 	Bot          *ext.Bot
-	updates      chan *RawUpdate
+	Updates      chan *RawUpdate
 	Dispatcher   *Dispatcher
 	UpdateGetter *ext.TgBotGetter
 }
 
-// NewUpdater Creates a new updater object, paired with the necessary dispatcher and bot objects.
+// NewUpdater Creates a new updater struct, paired with the necessary dispatcher and bot structs.
 func NewUpdater(token string) (*Updater, error) {
 	u := &Updater{}
 	user, err := ext.Bot{Token: token, Logger: logrus.New()}.GetMe()
@@ -38,8 +38,8 @@ func NewUpdater(token string) (*Updater, error) {
 		UserName:  user.Username,
 		Logger:    logrus.New(),
 	}
-	u.updates = make(chan *RawUpdate)
-	u.Dispatcher = NewDispatcher(u.Bot, u.updates)
+	u.Updates = make(chan *RawUpdate)
+	u.Dispatcher = NewDispatcher(u.Bot, u.Updates)
 	u.UpdateGetter = &ext.TgBotGetter{
 		Client: &http.Client{
 			Transport:     nil,
@@ -114,7 +114,7 @@ func (u Updater) startPolling(clean bool) {
 
 			for _, updData := range rawUpdates {
 				temp := RawUpdate(updData) // necessary to avoid memory stuff from loops
-				u.updates <- &temp
+				u.Updates <- &temp
 			}
 		}
 	}
@@ -155,7 +155,7 @@ func (u Updater) StartWebhook(webhook Webhook) {
 	http.HandleFunc("/"+webhook.ServePath, func(w http.ResponseWriter, r *http.Request) {
 		bytes, _ := ioutil.ReadAll(r.Body)
 		temp := RawUpdate(bytes)
-		u.updates <- &temp
+		u.Updates <- &temp
 	})
 	go func() {
 		// todo: TLS when using certs

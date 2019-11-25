@@ -1,6 +1,6 @@
 # github.com/PaulSonOfLars/gotg_md2html v0.0.0-20190928101618-7d177d22631c
 github.com/PaulSonOfLars/gotg_md2html
-# github.com/PaulSonOfLars/gotgbot v0.0.0-20191013160946-137f6d2752cc
+# github.com/PaulSonOfLars/gotgbot v0.0.0-20191117224821-883066135bc6
 github.com/PaulSonOfLars/gotgbot
 github.com/PaulSonOfLars/gotgbot/ext
 github.com/PaulSonOfLars/gotgbot/handlers
@@ -28,5 +28,5 @@ github.com/pkg/errors
 github.com/sirupsen/logrus
 # github.com/tcnksm/go-httpstat v0.2.0
 github.com/tcnksm/go-httpstat
-# golang.org/x/sys v0.0.0-20191010194322-b09406accb47
+# golang.org/x/sys v0.0.0-20191120155948-bd437916bb0e
 golang.org/x/sys/unix
