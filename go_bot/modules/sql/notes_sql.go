@@ -67,7 +67,7 @@ func AddNoteToDb(chatId string, noteName string, noteData string, msgtype int, b
 
 	hasButtons := len(buttons) > 0
 
-	note := &Note{ChatId: chatId, Name: noteName, Value: noteData, Msgtype: msgtype, File: file}
+	note := &Note{ChatId: chatId, Name: noteName, Value: noteData, Msgtype: msgtype, File: file, HasButtons: hasButtons}
 	tx.Where(Note{ChatId: chatId, Name: noteName}).Save(note)
 
 	for _, btn := range buttons {
