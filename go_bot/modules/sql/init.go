@@ -51,6 +51,6 @@ func init() {
 
 	// Create tables if they don't exist
 	SESSION.AutoMigrate(&User{}, &Chat{}, &Warns{}, &WarnFilters{}, &WarnSettings{}, &BlackListFilters{}, &Federation{},
-		&FedChat{}, &FedAdmin{}, &FedBan{}, &Note{}, &Button{})
+		&FedChat{}, &FedAdmin{}, &FedBan{}, &Note{}, &Button{}, &Welcome{}, &WelcomeButton{}, &MutedUser{})
 	log.Println("Auto-migrated database schema")
 }

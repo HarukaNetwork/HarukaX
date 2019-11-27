@@ -129,6 +129,20 @@ func BuildKeyboard(buttons []sql.Button) [][]ext.InlineKeyboardButton {
 	return keyb
 }
 
+func BuildWelcomeKeyboard(buttons []sql.WelcomeButton) [][]ext.InlineKeyboardButton {
+	keyb := make([][]ext.InlineKeyboardButton, 0)
+	for _, btn := range buttons {
+		if btn.SameLine && len(keyb) > 0 {
+			keyb[len(keyb)-1] = append(keyb[len(keyb)-1], ext.InlineKeyboardButton{Text: btn.Name, Url: btn.Url})
+		} else {
+			k := make([]ext.InlineKeyboardButton, 1)
+			k[0] = ext.InlineKeyboardButton{Text: btn.Name, Url: btn.Url}
+			keyb = append(keyb, k)
+		}
+	}
+	return keyb
+}
+
 func GetNoteType(msg *ext.Message) (string, string, int, string, []tg_md2html.Button) {
 	text := ""
 	var dataType = -1

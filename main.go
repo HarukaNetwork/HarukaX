@@ -37,6 +37,7 @@ import (
 	"github.com/ATechnoHazard/ginko/go_bot/modules/users"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/warns"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/welcome"
 	"github.com/PaulSonOfLars/gotgbot"
 	"github.com/PaulSonOfLars/gotgbot/ext"
 	"github.com/PaulSonOfLars/gotgbot/handlers"
@@ -66,6 +67,7 @@ func main() {
 	feds.LoadFeds(u)
 	notes.LoadNotes(u)
 	help.LoadHelp(u)
+	welcome.LoadWelcome(u)
 
 	log.Println("Starting long polling")
 	err = u.StartPolling()
