@@ -32,7 +32,6 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/parsemode"
 	"html"
 	"log"
-	"regexp"
 	"strconv"
 	"strings"
 )
@@ -155,20 +154,17 @@ func unmuteCallback(bot ext.Bot, u *gotgbot.Update) error {
 	query := u.CallbackQuery
 	user := u.EffectiveUser
 	chat := u.EffectiveChat
-	pattern, _ := regexp.Compile(`unmute`)
 
-	if pattern.MatchString(query.Data) {
-		if !sql.IsUserHuman(strconv.Itoa(user.Id), strconv.Itoa(chat.Id)) {
-			if !sql.HasUserClickedButton(strconv.Itoa(user.Id), strconv.Itoa(chat.Id)) {
-				_, err := bot.UnRestrictChatMember(chat.Id, user.Id)
-				if err != nil {
-					return err
-				}
-				go sql.UserClickedButton(strconv.Itoa(user.Id), strconv.Itoa(chat.Id))
-				_, _ = bot.AnswerCallbackQueryText(query.Id, "You've proved that you are a human! "+
-					"You can now talk in this group.", false)
-				return nil
+	if !sql.IsUserHuman(strconv.Itoa(user.Id), strconv.Itoa(chat.Id)) {
+		if !sql.HasUserClickedButton(strconv.Itoa(user.Id), strconv.Itoa(chat.Id)) {
+			_, err := bot.UnRestrictChatMember(chat.Id, user.Id)
+			if err != nil {
+				return err
 			}
+			go sql.UserClickedButton(strconv.Itoa(user.Id), strconv.Itoa(chat.Id))
+			_, _ = bot.AnswerCallbackQueryText(query.Id, "You've proved that you are a human! "+
+				"You can now talk in this group.", false)
+			return nil
 		}
 	}
 
