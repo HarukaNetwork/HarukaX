@@ -65,12 +65,12 @@ func IsUserAdmin(chat *ext.Chat, userId int) bool {
 
 	admins, err := caching.CACHE.Get(fmt.Sprintf("admin_%v", chat.Id))
 	if err != nil {
-		admincache(chat)
+		cacheAdmins(chat)
 	}
 
-	var x Cache
-	_ = json.Unmarshal(admins, &x)
-	if contains(x.Admin, strconv.Itoa(userId)) {
+	var adminList Cache
+	_ = json.Unmarshal(admins, &adminList)
+	if contains(adminList.Admin, strconv.Itoa(userId)) {
 		return true
 	}
 
@@ -167,17 +167,17 @@ func contains(s []string, e string) bool {
 	return false
 }
 
-func admincache(chat *ext.Chat) {
-	x, err := chat.GetAdministrators()
+func cacheAdmins(chat *ext.Chat) {
+	adminList, err := chat.GetAdministrators()
 	error_handling.HandleErr(err)
 	admins := make([]string, 0)
 
-	for _, y := range x {
-		admins = append(admins, strconv.Itoa(y.User.Id))
+	for _, admin := range adminList {
+		admins = append(admins, strconv.Itoa(admin.User.Id))
 	}
 
-	w := &Cache{admins}
-	z, _ := json.Marshal(w)
-	err = caching.CACHE.Set(fmt.Sprintf("admin_%v", chat.Id), z)
+	adminCache := &Cache{admins}
+	adminJson, _ := json.Marshal(adminCache)
+	err = caching.CACHE.Set(fmt.Sprintf("admin_%v", chat.Id), adminJson)
 	error_handling.HandleErr(err)
 }
