@@ -232,3 +232,15 @@ func GetNoteType(msg *ext.Message) (string, string, int, string, []tg_md2html.Bu
 	}
 	return noteName, text, dataType, content, buttons
 }
+
+func RevertButtons(buttons []sql.WelcomeButton) string {
+	res := ""
+	for _, btn := range buttons {
+		if btn.SameLine {
+			res += fmt.Sprintf("\n[%s](buttonurl://%s)", btn.Name, btn.Url)
+		} else {
+			res += fmt.Sprintf("\n[%s](buttonurl://%s:same)", btn.Name, btn.Url)
+		}
+	}
+	return res
+}

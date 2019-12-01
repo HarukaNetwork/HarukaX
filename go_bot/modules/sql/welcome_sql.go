@@ -57,7 +57,7 @@ func GetWelcomePrefs(chatID string) *Welcome {
 		return &Welcome{
 			ChatId:        chatID,
 			ShouldWelcome: true,
-			ShouldMute:    true,
+			ShouldMute:    false,
 			CleanWelcome:  0,
 			DelJoined:     false,
 			CustomWelcome: DefaultWelcome,
@@ -98,4 +98,10 @@ func HasUserClickedButton(userID, chatID string) bool {
 func IsUserHuman(userID, chatID string) bool {
 	mu := &MutedUser{UserId: userID, ChatId: chatID}
 	return SESSION.First(mu).RowsAffected != 0
+}
+
+// SetWelcPref Set whether to welcome or not
+func SetWelcPref(chatID string, pref bool) {
+	w := &Welcome{ShouldWelcome:pref}
+	SESSION.Save(w)
 }
