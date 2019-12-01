@@ -82,7 +82,8 @@ func main() {
 
 func start(_ ext.Bot, u *gotgbot.Update) error {
 	msg := u.EffectiveMessage
-	_, err := msg.ReplyText("Hi there!")
+	_, err := msg.ReplyTextf("Hi there! I'm a telegram group management bot, written in Go." +
+		"\nFor any questions or bug reports, you can head over to @gobotsupport.")
 	error_handling.HandleErr(err)
 	return nil
 }
