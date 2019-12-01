@@ -59,7 +59,7 @@ func IsUserBanProtected(chat *ext.Chat, userId int, member *ext.ChatMember) bool
 }
 
 func IsUserAdmin(chat *ext.Chat, userId int) bool {
-	if chat.Type == "private" {
+	if chat.Type == "private" || contains(go_bot.BotConfig.SudoUsers, strconv.Itoa(userId)) {
 		return true
 	}
 
