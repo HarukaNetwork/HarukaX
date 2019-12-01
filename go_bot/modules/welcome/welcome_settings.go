@@ -24,6 +24,7 @@ package welcome
 
 import (
 	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/chat_status"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/helpers"
 	"github.com/PaulSonOfLars/gotgbot"
 	"github.com/PaulSonOfLars/gotgbot/ext"
@@ -33,6 +34,12 @@ import (
 
 func welcome(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	chat := u.EffectiveChat
+
+	if !chat_status.IsUserAdmin(chat, u.EffectiveUser.Id) {
+		_, err := u.EffectiveMessage.ReplyText("You must be an admin to perform this action!")
+		return err
+	}
+
 	if len(args) == 0 || strings.ToLower(args[0]) == "noformat" {
 		noformat := len(args) > 0 && strings.ToLower(args[0]) == "noformat"
 		welcPrefs := sql.GetWelcomePrefs(strconv.Itoa(chat.Id))
