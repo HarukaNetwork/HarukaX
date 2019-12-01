@@ -177,6 +177,10 @@ func cmdGet(bot ext.Bot, u *gotgbot.Update, args []string) error {
 func hashGet(bot ext.Bot, u *gotgbot.Update) error {
 	msg := u.EffectiveMessage
 	fstWord := strings.Split(msg.Text, " ")[0]
+	if len(fstWord) <= 0 {
+		_, err := msg.ReplyText("Something went wrong! Contact @gobotsupport to figure out what.")
+		return err
+	}
 	noHash := fstWord[1:]
 	return get(bot, u, noHash, false, false)
 }
