@@ -32,12 +32,13 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/parsemode"
 	"html"
 	"log"
-	"regexp"
 	"strconv"
 	"strings"
 )
 
 //var VALID_WELCOME_FORMATTERS = []string{"first", "last", "fullname", "username", "id", "count", "chatname", "mention"}
+
+// EnumFuncMap map of welcome type to function to execute
 var EnumFuncMap = map[int]func(ext.Bot, int, string) (*ext.Message, error){
 	sql.TEXT:        ext.Bot.SendMessage,
 	sql.BUTTON_TEXT: ext.Bot.SendMessage,
@@ -123,7 +124,9 @@ func newMember(bot ext.Bot, u *gotgbot.Update) error {
 
 			if welcPrefs.ShouldMute {
 				if !sql.IsUserHuman(strconv.Itoa(mem.Id), strconv.Itoa(chat.Id)) {
-					_, _ = bot.RestrictChatMember(chat.Id, mem.Id)
+					if !sql.HasUserClickedButton(strconv.Itoa(mem.Id), strconv.Itoa(chat.Id)) {
+						_, _ = bot.RestrictChatMember(chat.Id, mem.Id)
+					}
 				}
 				kb := make([]ext.InlineKeyboardButton, 1)
 				kb[0] = ext.InlineKeyboardButton{Text: "Click here to prove you're human", CallbackData: "unmute"}
@@ -151,15 +154,17 @@ func unmuteCallback(bot ext.Bot, u *gotgbot.Update) error {
 	query := u.CallbackQuery
 	user := u.EffectiveUser
 	chat := u.EffectiveChat
-	pattern, _ := regexp.Compile(`unmute`)
 
-	if pattern.MatchString(query.Data) {
-		if !sql.IsUserHuman(strconv.Itoa(user.Id), strconv.Itoa(chat.Id)) {
+	if !sql.IsUserHuman(strconv.Itoa(user.Id), strconv.Itoa(chat.Id)) {
+		if !sql.HasUserClickedButton(strconv.Itoa(user.Id), strconv.Itoa(chat.Id)) {
 			_, err := bot.UnRestrictChatMember(chat.Id, user.Id)
-			go sql.MarkUserHuman(strconv.Itoa(user.Id), strconv.Itoa(chat.Id))
+			if err != nil {
+				return err
+			}
+			go sql.UserClickedButton(strconv.Itoa(user.Id), strconv.Itoa(chat.Id))
 			_, _ = bot.AnswerCallbackQueryText(query.Id, "You've proved that you are a human! "+
 				"You can now talk in this group.", false)
-			return err
+			return nil
 		}
 	}
 
@@ -167,6 +172,7 @@ func unmuteCallback(bot ext.Bot, u *gotgbot.Update) error {
 	return gotgbot.EndGroups{}
 }
 
+// LoadWelcome load welcome module
 func LoadWelcome(u *gotgbot.Updater) {
 	defer log.Println("Loading module welcome")
 	u.Dispatcher.AddHandler(handlers.NewMessage(Filters.NewChatMembers(), newMember))

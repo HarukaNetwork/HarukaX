@@ -30,7 +30,7 @@ type Welcome struct {
 	ShouldWelcome bool `gorm:"default:true"`
 	ShouldMute    bool `gorm:"default:true"`
 	DelJoined     bool `gorm:"default:false"`
-	CleanWelcome  int `gorm:"default:0"`
+	CleanWelcome  int  `gorm:"default:0"`
 	WelcomeType   int  `gorm:"default:0"`
 	MuteTime      int  `gorm:"default:0"`
 }
@@ -44,16 +44,18 @@ type WelcomeButton struct {
 }
 
 type MutedUser struct {
-	UserId string `gorm:"primary_key"`
-	ChatId string `gorm:"primary_key"`
+	UserId        string `gorm:"primary_key"`
+	ChatId        string `gorm:"primary_key"`
+	ButtonClicked bool   `gorm:"default:false"`
 }
 
-func GetWelcomePrefs(chatId string) *Welcome {
-	welc := &Welcome{ChatId: chatId}
+// GetWelcomePrefs Return the preferences for welcoming users
+func GetWelcomePrefs(chatID string) *Welcome {
+	welc := &Welcome{ChatId: chatID}
 
 	if SESSION.First(welc).RowsAffected == 0 {
 		return &Welcome{
-			ChatId:        chatId,
+			ChatId:        chatID,
 			ShouldWelcome: true,
 			ShouldMute:    true,
 			CleanWelcome:  0,
@@ -66,28 +68,34 @@ func GetWelcomePrefs(chatId string) *Welcome {
 	return welc
 }
 
-func GetWelcomeButtons(chatId string) []WelcomeButton {
+// GetWelcomeButtons Get the buttons for the welcome message
+func GetWelcomeButtons(chatID string) []WelcomeButton {
 	var buttons []WelcomeButton
-	SESSION.Where("chat_id = ?", chatId).Find(&buttons)
+	SESSION.Where("chat_id = ?", chatID).Find(&buttons)
 	return buttons
 }
 
-func SetCleanWelcome(chatId string, cw int) {
-	w := &Welcome{ChatId: chatId, CleanWelcome: cw}
+// SetCleanWelcome Set whether to clean old welcome messages or not
+func SetCleanWelcome(chatID string, cw int) {
+	w := &Welcome{ChatId: chatID, CleanWelcome: cw}
 	SESSION.Save(w)
 }
 
-func MarkUserHuman(userId string, chatId string) {
-	mu := &MutedUser{UserId: userId, ChatId: chatId}
+// UserClickedButton Mark the user as a human
+func UserClickedButton(userID, chatID string) {
+	mu := &MutedUser{UserId: userID, ChatId: chatID, ButtonClicked: true}
 	SESSION.Save(mu)
 }
 
-func IsUserHuman(userId string, chatId string) bool {
-	mu := &MutedUser{UserId: userId, ChatId: chatId}
-	return SESSION.First(mu).RowsAffected != 0
+// HasUserClickedButton Has the user clicked button to unmute themselves
+func HasUserClickedButton(userID, chatID string) bool {
+	mu := &MutedUser{UserId: userID, ChatId: chatID}
+	SESSION.FirstOrInit(mu)
+	return mu.ButtonClicked
 }
 
-//func SetCleanWelcome(chatId string, messageId int) {
-//	w := &Welcome{ChatId: chatId, CleanWelcome: messageId}
-//	SESSION.Save(w)
-//}
+// IsUserHuman Is the user a human
+func IsUserHuman(userID, chatID string) bool {
+	mu := &MutedUser{UserId: userID, ChatId: chatID}
+	return SESSION.First(mu).RowsAffected != 0
+}
