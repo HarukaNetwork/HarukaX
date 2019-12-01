@@ -62,7 +62,7 @@ func mute(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	member, _ := chat.GetMember(userId)
 
 	if member != nil {
-		if chat_status.IsUserAdmin(chat, userId, member) {
+		if chat_status.IsUserAdmin(chat, userId) {
 			_, err := msg.ReplyText("Afraid I can't stop an admin from talking!")
 			return err
 		} else {
@@ -101,7 +101,7 @@ func unmute(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	error_handling.HandleErr(err)
 
 	if member != nil {
-		if chat_status.IsUserAdmin(chat, userId, member) {
+		if chat_status.IsUserAdmin(chat, userId) {
 			_, err := msg.ReplyText("This is an admin, what do you expect me to do?")
 			return err
 		} else {
@@ -137,7 +137,7 @@ func tempMute(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		return err
 	}
 
-	member, err := chat.GetMember(userId)
+	_, err := chat.GetMember(userId)
 	if err != nil {
 		if err.Error() == "User not found" {
 			_, err := msg.ReplyText("I can't seem to find this user!")
@@ -145,7 +145,7 @@ func tempMute(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		}
 	}
 
-	if chat_status.IsUserAdmin(chat, userId, member) {
+	if chat_status.IsUserAdmin(chat, userId) {
 		_, err := msg.ReplyText("I really wish I could mute admins...")
 		return err
 	}

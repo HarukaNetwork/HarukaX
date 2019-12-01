@@ -6,6 +6,17 @@ github.com/PaulSonOfLars/gotgbot/ext
 github.com/PaulSonOfLars/gotgbot/handlers
 github.com/PaulSonOfLars/gotgbot/handlers/Filters
 github.com/PaulSonOfLars/gotgbot/parsemode
+# github.com/allegro/bigcache v1.2.1
+github.com/allegro/bigcache
+github.com/allegro/bigcache/queue
+# github.com/go-redis/redis v6.15.6+incompatible
+github.com/go-redis/redis
+github.com/go-redis/redis/internal
+github.com/go-redis/redis/internal/consistenthash
+github.com/go-redis/redis/internal/hashtag
+github.com/go-redis/redis/internal/pool
+github.com/go-redis/redis/internal/proto
+github.com/go-redis/redis/internal/util
 # github.com/google/uuid v1.1.1
 github.com/google/uuid
 # github.com/jinzhu/gorm v1.9.11

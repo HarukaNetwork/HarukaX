@@ -43,7 +43,7 @@ func warn(u *ext.User, c *ext.Chat, reason string, m *ext.Message) error {
 	var err error
 	var reply string
 
-	if chat_status.IsUserAdmin(c, u.Id, nil) {
+	if chat_status.IsUserAdmin(c, u.Id) {
 		_, err = m.ReplyText("Damn admins, can't even be warned!")
 		return err
 	}
@@ -134,7 +134,7 @@ func button(bot ext.Bot, u *gotgbot.Update) error {
 	pattern, _ := regexp.Compile(`rmWarn\((.+?)\)`)
 
 	// Check permissions
-	if !chat_status.IsUserAdmin(chat, user.Id, nil) {
+	if !chat_status.IsUserAdmin(chat, user.Id) {
 		_, _ = bot.AnswerCallbackQueryText(query.Id, "You need to be an admin to do this.", true)
 		return gotgbot.EndGroups{}
 	}

@@ -23,11 +23,18 @@
 package chat_status
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/ATechnoHazard/ginko/go_bot"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/caching"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/PaulSonOfLars/gotgbot/ext"
 	"strconv"
 )
+
+type Cache struct {
+	Admin []string `json:"admin"`
+}
 
 func CanDelete(chat *ext.Chat, botId int) bool {
 	k, err := chat.GetMember(botId)
@@ -51,20 +58,23 @@ func IsUserBanProtected(chat *ext.Chat, userId int, member *ext.ChatMember) bool
 	}
 }
 
-func IsUserAdmin(chat *ext.Chat, userId int, member *ext.ChatMember) bool {
+func IsUserAdmin(chat *ext.Chat, userId int) bool {
 	if chat.Type == "private" || contains(go_bot.BotConfig.SudoUsers, strconv.Itoa(userId)) {
 		return true
 	}
-	if member == nil {
-		mem, err := chat.GetMember(userId)
-		error_handling.HandleErr(err)
-		member = mem
+
+	admins, err := caching.CACHE.Get(fmt.Sprintf("admin_%v", chat.Id))
+	if err != nil {
+		cacheAdmins(chat)
 	}
-	if member.Status == "administrator" || member.Status == "creator" {
+
+	var adminList Cache
+	_ = json.Unmarshal(admins, &adminList)
+	if contains(adminList.Admin, strconv.Itoa(userId)) {
 		return true
-	} else {
-		return false
 	}
+
+	return false
 }
 
 func IsBotAdmin(chat *ext.Chat, member *ext.ChatMember) bool {
@@ -97,7 +107,7 @@ func RequireBotAdmin(chat *ext.Chat, msg *ext.Message) bool {
 }
 
 func RequireUserAdmin(chat *ext.Chat, msg *ext.Message, userId int, member *ext.ChatMember) bool {
-	if !IsUserAdmin(chat, userId, member) {
+	if !IsUserAdmin(chat, userId) {
 		_, err := msg.ReplyText("You must be an admin to perform this action.")
 		error_handling.HandleErr(err)
 		return false
@@ -155,4 +165,19 @@ func contains(s []string, e string) bool {
 		}
 	}
 	return false
+}
+
+func cacheAdmins(chat *ext.Chat) {
+	adminList, err := chat.GetAdministrators()
+	error_handling.HandleErr(err)
+	admins := make([]string, 0)
+
+	for _, admin := range adminList {
+		admins = append(admins, strconv.Itoa(admin.User.Id))
+	}
+
+	adminCache := &Cache{admins}
+	adminJson, _ := json.Marshal(adminCache)
+	err = caching.CACHE.Set(fmt.Sprintf("admin_%v", chat.Id), adminJson)
+	error_handling.HandleErr(err)
 }

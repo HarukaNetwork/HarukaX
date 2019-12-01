@@ -203,7 +203,7 @@ func fedCheckBan(bot ext.Bot, u *gotgbot.Update) error {
 	msg := u.EffectiveMessage
 	chat := u.EffectiveChat
 
-	if chat_status.IsUserAdmin(chat, u.EffectiveUser.Id, nil) {
+	if chat_status.IsUserAdmin(chat, u.EffectiveUser.Id) {
 		return gotgbot.ContinueGroups{}
 	}
 

@@ -100,6 +100,7 @@ func IsUserHuman(userID, chatID string) bool {
 	return SESSION.First(mu).RowsAffected != 0
 }
 
+// SetWelcPref Set whether to welcome or not
 func SetWelcPref(chatID string, pref bool) {
 	w := &Welcome{ShouldWelcome:pref}
 	SESSION.Save(w)

@@ -35,6 +35,7 @@ import (
 	"github.com/ATechnoHazard/ginko/go_bot/modules/notes"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/users"
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/caching"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/warns"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/welcome"
@@ -54,6 +55,10 @@ func main() {
 
 	// Create database tables if not already existing
 	sql.EnsureBotInDb(u)
+
+	// Prepare Caching Service
+	caching.InitCache()
+	caching.InitRedis()
 
 	// Add module handlers
 	bans.LoadBans(u)
