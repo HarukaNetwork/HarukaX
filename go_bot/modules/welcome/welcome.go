@@ -177,4 +177,5 @@ func LoadWelcome(u *gotgbot.Updater) {
 	defer log.Println("Loading module welcome")
 	u.Dispatcher.AddHandler(handlers.NewMessage(Filters.NewChatMembers(), newMember))
 	u.Dispatcher.AddHandler(handlers.NewCallback("unmute", unmuteCallback))
+	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("welcome", []rune{'!', '/'}, welcome))
 }
