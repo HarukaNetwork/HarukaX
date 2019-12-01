@@ -166,7 +166,7 @@ func delBlacklist(_ ext.Bot, u *gotgbot.Update) error {
 	chat := u.EffectiveChat
 	msg := u.EffectiveMessage
 
-	if chat_status.IsUserAdmin(chat, u.EffectiveUser.Id, nil) {
+	if chat_status.IsUserAdmin(chat, u.EffectiveUser.Id) {
 		return gotgbot.EndGroups{}
 	}
 

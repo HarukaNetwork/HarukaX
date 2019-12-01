@@ -32,14 +32,16 @@ import (
 )
 
 type Config struct {
-	BotName     string
-	ApiKey      string
-	OwnerName   string
-	OwnerId     int
-	SudoUsers   []string
-	LoadPlugins []string
-	SqlUri      string
-	Heroku      bool
+	BotName       string
+	ApiKey        string
+	OwnerName     string
+	OwnerId       int
+	SudoUsers     []string
+	LoadPlugins   []string
+	SqlUri        string
+	RedisAddress  string
+	RedisPassword string
+	Heroku        bool
 }
 
 var BotConfig Config
@@ -78,6 +80,15 @@ func init() {
 	// If env var is empty
 	if !ok {
 		log.Fatal("Missing PostgreSQL URI")
+	}
+
+	returnConfig.RedisAddress, ok = os.LookupEnv("REDIS_ADDRESS")
+	if !ok {
+		returnConfig.RedisAddress = "localhost:6379"
+	}
+	returnConfig.RedisPassword, ok = os.LookupEnv("REDIS_PASSWORD")
+	if !ok {
+		returnConfig.RedisPassword = ""
 	}
 
 	_, returnConfig.Heroku = os.LookupEnv("HEROKU")

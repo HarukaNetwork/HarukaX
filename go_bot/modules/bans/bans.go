@@ -234,7 +234,7 @@ func kickme(_ ext.Bot, u *gotgbot.Update) error {
 		return gotgbot.EndGroups{}
 	}
 
-	if chat_status.IsUserAdmin(chat, user.Id, nil) {
+	if chat_status.IsUserAdmin(chat, user.Id) {
 		_, err := message.ReplyText("Admin sir pls ;_;")
 		error_handling.HandleErr(err)
 		return gotgbot.EndGroups{}

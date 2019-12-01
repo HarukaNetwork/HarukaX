@@ -62,45 +62,45 @@ func initHelpButtons() {
 
 	// First column
 	helpButtons[0][0] = ext.InlineKeyboardButton{
-		Text:         "admin",
+		Text:         "Admin",
 		CallbackData: fmt.Sprintf("help(%v)", "admin"),
 	}
 	helpButtons[1][0] = ext.InlineKeyboardButton{
-		Text:         "bans",
+		Text:         "Bans",
 		CallbackData: fmt.Sprintf("help(%v)", "bans"),
 	}
 	helpButtons[2][0] = ext.InlineKeyboardButton{
-		Text:         "blacklist",
+		Text:         "Blacklist",
 		CallbackData: fmt.Sprintf("help(%v)", "blacklist"),
 	}
 	helpButtons[3][0] = ext.InlineKeyboardButton{
-		Text:         "deleting",
+		Text:         "Deleting",
 		CallbackData: fmt.Sprintf("help(%v)", "deleting"),
 	}
 	helpButtons[4][0] = ext.InlineKeyboardButton{
-		Text:         "federations",
+		Text:         "Federations",
 		CallbackData: fmt.Sprintf("help(%v)", "feds"),
 	}
 
 	// Second column
 	helpButtons[0][1] = ext.InlineKeyboardButton{
-		Text:         "misc",
+		Text:         "Misc",
 		CallbackData: fmt.Sprintf("help(%v)", "misc"),
 	}
 	helpButtons[1][1] = ext.InlineKeyboardButton{
-		Text:         "muting",
+		Text:         "Muting",
 		CallbackData: fmt.Sprintf("help(%v)", "muting"),
 	}
 	helpButtons[2][1] = ext.InlineKeyboardButton{
-		Text:         "notes",
+		Text:         "Notes",
 		CallbackData: fmt.Sprintf("help(%v)", "notes"),
 	}
 	helpButtons[3][1] = ext.InlineKeyboardButton{
-		Text:         "users",
+		Text:         "Users",
 		CallbackData: fmt.Sprintf("help(%v)", "users"),
 	}
 	helpButtons[4][1] = ext.InlineKeyboardButton{
-		Text:         "warns",
+		Text:         "Warns",
 		CallbackData: fmt.Sprintf("help(%v)", "warns"),
 	}
 
@@ -149,7 +149,7 @@ func buttonHandler(b ext.Bot, u *gotgbot.Update) error {
 		msg := b.NewSendableEditMessageText(chat.Id, u.EffectiveMessage.MessageId, "placeholder")
 		msg.ParseMode = parsemode.Html
 		backButton := [][]ext.InlineKeyboardButton{{ext.InlineKeyboardButton{
-			Text:         "back",
+			Text:         "Back",
 			CallbackData: "help(back)",
 		}}}
 		backKeyboard := ext.InlineKeyboardMarkup{InlineKeyboard: &backButton}
