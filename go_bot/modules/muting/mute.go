@@ -137,6 +137,14 @@ func tempMute(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		return err
 	}
 
+	_, err := chat.GetMember(userId)
+	if err != nil {
+		if err.Error() == "User not found" {
+			_, err := msg.ReplyText("I can't seem to find this user!")
+			return err
+		}
+	}
+
 	if chat_status.IsUserAdmin(chat, userId) {
 		_, err := msg.ReplyText("I really wish I could mute admins...")
 		return err
@@ -159,7 +167,7 @@ func tempMute(bot ext.Bot, u *gotgbot.Update, args []string) error {
 
 	newMsg := bot.NewSendableRestrictChatMember(chat.Id, userId)
 	newMsg.UntilDate = muteTime
-	_, err := newMsg.Send()
+	_, err = newMsg.Send()
 	if err != nil {
 		_, err := msg.ReplyText("Press F, I can't seem to mute this user.")
 		error_handling.HandleErr(err)
