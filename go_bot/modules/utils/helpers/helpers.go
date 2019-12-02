@@ -192,12 +192,6 @@ func GetNoteType(msg *ext.Message) (string, string, int, string, []tg_md2html.Bu
 			dataType = sql.TEXT
 		}
 	} else if msg.ReplyToMessage != nil {
-		//var msgText string
-		//if msg.ReplyToMessage.Text == "" {
-		//	msgText = msg.ReplyToMessage.Caption
-		//} else {
-		//	rawText = msg.ReplyToMessage.Text
-		//}
 		if len(args) >= 2 && msg.ReplyToMessage.Text != "" {
 			text, buttons = tg_md2html.MD2HTMLButtons(rawText)
 			if len(buttons) > 0 {
@@ -231,6 +225,89 @@ func GetNoteType(msg *ext.Message) (string, string, int, string, []tg_md2html.Bu
 		}
 	}
 	return noteName, text, dataType, content, buttons
+}
+
+func GetWelcomeType(msg *ext.Message) (string, int, string, []tg_md2html.Button) {
+	text := ""
+	var dataType = -1
+	var content string
+	var rawText string
+	var entities []ext.MessageEntity
+
+	if reply := msg.ReplyToMessage; reply != nil {
+		if reply.Text == "" {
+			rawText = reply.Caption
+			entities = reply.CaptionEntities
+		} else {
+			rawText = reply.Text
+			entities = reply.Entities
+		}
+	} else {
+		if msg.Text == "" {
+			rawText = msg.Caption
+			entities = msg.CaptionEntities
+		} else {
+			rawText = msg.Text
+			entities = msg.Entities
+		}
+	}
+
+	timesInserted := 0
+
+	for _, ent := range entities {
+		if ent.Type == "code" {
+			rawText = rawText[:ent.Offset+timesInserted] + "`" + rawText[ent.Offset+timesInserted:]
+			timesInserted++
+			rawText = rawText[:(ent.Offset+ent.Length+(timesInserted))] + "`" + rawText[(ent.Offset+ent.Length+(timesInserted)):]
+			timesInserted++
+		}
+	}
+
+	args := strings.SplitN(msg.Text, " ", 2)
+
+	buttons := make([]tg_md2html.Button, 0)
+	if len(args) >= 2 {
+		text, buttons = tg_md2html.MD2HTMLButtons(strings.SplitN(rawText, " ", 2)[1])
+
+		if len(buttons) > 0 {
+			dataType = sql.BUTTON_TEXT
+		} else {
+			dataType = sql.TEXT
+		}
+	} else if msg.ReplyToMessage != nil {
+		if len(args) >= 2 && msg.ReplyToMessage.Text != "" {
+			text, buttons = tg_md2html.MD2HTMLButtons(rawText)
+			if len(buttons) > 0 {
+				dataType = sql.BUTTON_TEXT
+			} else {
+				dataType = sql.TEXT
+			}
+		} else if msg.ReplyToMessage.Sticker != nil {
+			content = msg.ReplyToMessage.Sticker.FileId
+			dataType = sql.STICKER
+		} else if msg.ReplyToMessage.Document != nil {
+			content = msg.ReplyToMessage.Document.FileId
+			text, buttons = tg_md2html.MD2HTMLButtons(rawText)
+			dataType = sql.DOCUMENT
+		} else if len(msg.ReplyToMessage.Photo) > 0 {
+			content = msg.ReplyToMessage.Photo[len(msg.ReplyToMessage.Photo)-1].FileId
+			text, buttons = tg_md2html.MD2HTMLButtons(rawText)
+			dataType = sql.PHOTO
+		} else if msg.ReplyToMessage.Audio != nil {
+			content = msg.ReplyToMessage.Audio.FileId
+			text, buttons = tg_md2html.MD2HTMLButtons(rawText)
+			dataType = sql.AUDIO
+		} else if msg.ReplyToMessage.Voice != nil {
+			content = msg.ReplyToMessage.Voice.FileId
+			text, buttons = tg_md2html.MD2HTMLButtons(rawText)
+			dataType = sql.VOICE
+		} else if msg.ReplyToMessage.Video != nil {
+			content = msg.ReplyToMessage.Video.FileId
+			text, buttons = tg_md2html.MD2HTMLButtons(rawText)
+			dataType = sql.VIDEO
+		}
+	}
+	return text, dataType, content, buttons
 }
 
 func RevertButtons(buttons []sql.WelcomeButton) string {

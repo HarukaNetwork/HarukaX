@@ -39,7 +39,7 @@ func init() {
 
 	db, err := gorm.Open("postgres", conn)
 	error_handling.FatalError(err)
-	SESSION = db
+	SESSION = db.Debug()
 
 	if go_bot.BotConfig.Heroku {
 		db.DB().SetMaxOpenConns(20)
@@ -50,7 +50,7 @@ func init() {
 	log.Println("Database connected")
 
 	// Create tables if they don't exist
-	SESSION.AutoMigrate(&User{}, &Chat{}, &Warns{}, &WarnFilters{}, &WarnSettings{}, &BlackListFilters{}, &Federation{},
-		&FedChat{}, &FedAdmin{}, &FedBan{}, &Note{}, &Button{}, &Welcome{}, &WelcomeButton{}, &MutedUser{})
+	//SESSION.AutoMigrate(&User{}, &Chat{}, &Warns{}, &WarnFilters{}, &WarnSettings{}, &BlackListFilters{}, &Federation{},
+	//	&FedChat{}, &FedAdmin{}, &FedBan{}, &Note{}, &Button{}, &Welcome{}, &WelcomeButton{}, &MutedUser{})
 	log.Println("Auto-migrated database schema")
 }

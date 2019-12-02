@@ -22,6 +22,8 @@
 
 package sql
 
+import "log"
+
 const DefaultWelcome = "Hey {first}, how are you?"
 
 type Welcome struct {
@@ -78,7 +80,7 @@ func GetWelcomeButtons(chatID string) []WelcomeButton {
 // SetCleanWelcome Set whether to clean old welcome messages or not
 func SetCleanWelcome(chatID string, cw int) {
 	w := &Welcome{ChatId: chatID, CleanWelcome: cw}
-	SESSION.Save(w)
+	SESSION.FirstOrCreate(&Welcome{ChatId: chatID}).Save(w)
 }
 
 // UserClickedButton Mark the user as a human
@@ -102,6 +104,35 @@ func IsUserHuman(userID, chatID string) bool {
 
 // SetWelcPref Set whether to welcome or not
 func SetWelcPref(chatID string, pref bool) {
-	w := &Welcome{ShouldWelcome:pref}
-	SESSION.Save(w)
+	w := &Welcome{ChatId: chatID}
+	tx := SESSION.Begin()
+	tx.FirstOrCreate(w)
+	w.ShouldWelcome = pref
+	tx.Save(w)
+	tx.Commit()
+}
+
+// SetCustomWelcome Set the custom welcome string
+func SetCustomWelcome(chatID string, welcome string, buttons []WelcomeButton) {
+	w := &Welcome{ChatId: chatID}
+	if buttons == nil {
+		buttons = make([]WelcomeButton, 0)
+	}
+
+	tx := SESSION.Begin()
+	prevButtons := make([]WelcomeButton, 0)
+	tx.Where(&WelcomeButton{ChatId: chatID}).Find(&prevButtons)
+	for _, btn := range prevButtons {
+		tx.Delete(&btn)
+	}
+
+	for _, btn := range buttons {
+		tx.Save(&btn)
+	}
+
+	tx.FirstOrCreate(w)
+	w.CustomWelcome = welcome
+	tx.Save(w)
+	log.Println(w)
+	tx.Commit()
 }
