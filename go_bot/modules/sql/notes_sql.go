@@ -22,6 +22,13 @@
 
 package sql
 
+import (
+	"encoding/json"
+	"fmt"
+
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/caching"
+)
+
 const (
 	TEXT        = 0
 	BUTTON_TEXT = 1
@@ -34,25 +41,28 @@ const (
 )
 
 type Note struct {
-	ChatId     string `gorm:"primary_key"`
-	Name       string `gorm:"primary_key"`
-	Value      string `gorm:"not null"`
-	File       string
-	IsReply    bool `gorm:"default:false"`
-	HasButtons bool `gorm:"default:false"`
-	Msgtype    int  `gorm:"default:1"`
+	ChatId     string `gorm:"primary_key" json:"chat_id"`
+	Name       string `gorm:"primary_key" json:"name"`
+	Value      string `gorm:"not null" json:"value"`
+	File       string `json:"file"`
+	IsReply    bool   `gorm:"default:false" json:"is_reply"`
+	HasButtons bool   `gorm:"default:false" json:"has_buttons"`
+	Msgtype    int    `gorm:"default:1" json:"msgtype"`
 }
 
 type Button struct {
-	Id       uint   `gorm:"primary_key;AUTO_INCREMENT"`
-	ChatId   string `gorm:"primary_key"`
-	NoteName string `gorm:"primary_key"`
-	Name     string `gorm:"not null"`
-	Url      string `gorm:"not null"`
-	SameLine bool   `gorm:"default:false"`
+	Id       uint   `gorm:"primary_key;AUTO_INCREMENT" json:"id"`
+	ChatId   string `gorm:"primary_key" json:"chat_id"`
+	NoteName string `gorm:"primary_key" json:"note_name"`
+	Name     string `gorm:"not null" json:"name"`
+	Url      string `gorm:"not null" json:"url"`
+	SameLine bool   `gorm:"default:false" json:"same_line"`
 }
 
 func AddNoteToDb(chatId string, noteName string, noteData string, msgtype int, buttons []Button, file string) {
+	defer func() {
+		go cacheNote(chatId, noteName)
+	}()
 	if buttons == nil {
 		buttons = make([]Button, 0)
 	}
@@ -78,15 +88,28 @@ func AddNoteToDb(chatId string, noteName string, noteData string, msgtype int, b
 }
 
 func GetNote(chatId string, noteName string) *Note {
-	note := &Note{ChatId: chatId, Name: noteName}
-	if SESSION.First(note).RowsAffected == 0 {
-		return nil
+	notes, err := caching.CACHE.Get(fmt.Sprintf("note_%v", chatId))
+	if err != nil {
+		go cacheNote(chatId, noteName)
 	}
-	return note
+
+	var n []Note
+	_ = json.Unmarshal(notes, &n)
+
+	for _, note := range n {
+		if note.Name == noteName {
+			return &note
+		}
+	}
+
+	return nil
 }
 
 func RmNote(chatId string, noteName string) bool {
 	tx := SESSION.Begin()
+	defer func() {
+		go cacheNote(chatId, noteName)
+	}()
 	note := &Note{ChatId: chatId, Name: noteName}
 
 	if tx.First(note).RowsAffected == 0 {
@@ -106,15 +129,46 @@ func RmNote(chatId string, noteName string) bool {
 }
 
 func GetAllChatNotes(chatId string) []Note {
-	notes := make([]Note, 0)
-	SESSION.Where("chat_id = ?", chatId).Find(&notes)
-	return notes
+	notes, err := caching.CACHE.Get(fmt.Sprintf("note_%v", chatId))
+	if err != nil {
+		go cacheNote(chatId, "")
+	}
+
+	var n []Note
+	_ = json.Unmarshal(notes, &n)
+	return n
 }
 
 func GetButtons(chatId string, noteName string) []Button {
-	buttons := make([]Button, 0)
-	if SESSION.Where(Button{ChatId: chatId, NoteName: noteName}).Find(&buttons).RowsAffected == 0 {
-		return nil
+	buttons, err := caching.CACHE.Get(fmt.Sprintf("button_%v_%v", chatId, noteName))
+	if err != nil {
+		go cacheNote(chatId, noteName)
 	}
-	return buttons
+	var btns []Button
+	_ = json.Unmarshal(buttons, &btns)
+
+	return btns
+}
+
+func cacheNote(chatId string, noteName string) {
+	var notes []Note
+	var buttons []Button
+	if noteName != "" {
+		SESSION.Where(Button{ChatId: chatId, NoteName: noteName}).Find(&buttons)
+	}
+	SESSION.Where("chat_id = ?", chatId).Find(&notes)
+
+	if notes != nil {
+		if len(notes) != 0 {
+			nJson, _ := json.Marshal(notes)
+			_ = caching.CACHE.Set(fmt.Sprintf("note_%v", chatId), nJson)
+		}
+	}
+
+	if buttons != nil {
+		if len(buttons) != 0 {
+			nButtons, _ := json.Marshal(buttons)
+			_ = caching.CACHE.Set(fmt.Sprintf("button_%v_%v", chatId, noteName), nButtons)
+		}
+	}
 }
