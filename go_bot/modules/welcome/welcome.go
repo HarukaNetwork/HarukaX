@@ -23,6 +23,11 @@
 package welcome
 
 import (
+	"html"
+	"log"
+	"strconv"
+	"strings"
+
 	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/helpers"
 	"github.com/PaulSonOfLars/gotgbot"
@@ -30,10 +35,6 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/handlers"
 	"github.com/PaulSonOfLars/gotgbot/handlers/Filters"
 	"github.com/PaulSonOfLars/gotgbot/parsemode"
-	"html"
-	"log"
-	"strconv"
-	"strings"
 )
 
 //var VALID_WELCOME_FORMATTERS = []string{"first", "last", "fullname", "username", "id", "count", "chatname", "mention"}
@@ -179,4 +180,5 @@ func LoadWelcome(u *gotgbot.Updater) {
 	u.Dispatcher.AddHandler(handlers.NewCallback("unmute", unmuteCallback))
 	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("welcome", []rune{'!', '/'}, welcome))
 	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("setwelcome", []rune{'!', '/'}, setWelcome))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("resetwelcome", []rune{'!', '/'}, resetWelcome))
 }

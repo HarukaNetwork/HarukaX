@@ -23,12 +23,13 @@
 package sql
 
 import (
+	"log"
+
 	"github.com/ATechnoHazard/ginko/go_bot"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/lib/pq"
-	"log"
 )
 
 var SESSION *gorm.DB
@@ -50,7 +51,8 @@ func init() {
 	log.Println("Database connected")
 
 	// Create tables if they don't exist
-	//SESSION.AutoMigrate(&User{}, &Chat{}, &Warns{}, &WarnFilters{}, &WarnSettings{}, &BlackListFilters{}, &Federation{},
-	//	&FedChat{}, &FedAdmin{}, &FedBan{}, &Note{}, &Button{}, &Welcome{}, &WelcomeButton{}, &MutedUser{})
+	SESSION.AutoMigrate(&User{}, &Chat{}, &Warns{}, &WarnFilters{}, &WarnSettings{}, &BlackListFilters{}, &Federation{},
+		&FedChat{}, &FedAdmin{}, &FedBan{}, &Note{}, &Button{}, &Welcome{}, &WelcomeButton{}, &MutedUser{})
 	log.Println("Auto-migrated database schema")
+
 }

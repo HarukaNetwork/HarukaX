@@ -23,21 +23,22 @@
 package welcome
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/chat_status"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/helpers"
 	"github.com/PaulSonOfLars/gotgbot"
 	"github.com/PaulSonOfLars/gotgbot/ext"
-	"strconv"
-	"strings"
 )
 
 func welcome(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	chat := u.EffectiveChat
 
 	if !chat_status.IsUserAdmin(chat, u.EffectiveUser.Id) {
-		_, err := u.EffectiveMessage.ReplyText("You need to be an admin to do this.")
-		return err
+		_, _ = u.EffectiveMessage.ReplyText("You need to be an admin to do this.")
+		return gotgbot.ContinueGroups{}
 	}
 
 	if len(args) == 0 || strings.ToLower(args[0]) == "noformat" {
@@ -86,13 +87,13 @@ func welcome(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	return nil
 }
 
-func setWelcome(bot ext.Bot, u *gotgbot.Update) error {
+func setWelcome(_ ext.Bot, u *gotgbot.Update) error {
 	chat := u.EffectiveChat
 	msg := u.EffectiveMessage
 
 	if !chat_status.IsUserAdmin(chat, u.EffectiveUser.Id) {
-		_, err := u.EffectiveMessage.ReplyText("You need to be an admin to do this.")
-		return err
+		_, _ = u.EffectiveMessage.ReplyText("You need to be an admin to do this.")
+		return gotgbot.ContinueGroups{}
 	}
 
 	text, dataType, content, buttons := helpers.GetWelcomeType(msg)
@@ -112,11 +113,25 @@ func setWelcome(bot ext.Bot, u *gotgbot.Update) error {
 	}
 
 	if text != "" {
-		go sql.SetCustomWelcome(strconv.Itoa(chat.Id), text, btns)
+		go sql.SetCustomWelcome(strconv.Itoa(chat.Id), text, btns, dataType)
 	} else {
-		go sql.SetCustomWelcome(strconv.Itoa(chat.Id), content, btns)
+		go sql.SetCustomWelcome(strconv.Itoa(chat.Id), content, btns, dataType)
 	}
 
 	_, err := msg.ReplyText("Successfully set custom welcome message!")
+	return err
+}
+
+func resetWelcome(bot ext.Bot, u *gotgbot.Update) error {
+	chat := u.EffectiveChat
+
+	if !chat_status.IsUserAdmin(chat, u.EffectiveUser.Id) {
+		_, _ = u.EffectiveMessage.ReplyText("You need to be an admin to do this.")
+		return gotgbot.ContinueGroups{}
+	}
+
+	go sql.SetCustomWelcome(strconv.Itoa(chat.Id), sql.DefaultWelcome, nil, sql.TEXT)
+
+	_, err := u.EffectiveMessage.ReplyText("Succesfully reset custom welcome message to default!")
 	return err
 }

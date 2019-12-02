@@ -24,11 +24,12 @@ package helpers
 
 import (
 	"fmt"
+	"html"
+	"strings"
+
 	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
 	tg_md2html "github.com/PaulSonOfLars/gotg_md2html"
 	"github.com/PaulSonOfLars/gotgbot/ext"
-	"html"
-	"strings"
 )
 
 var MaxMessageLength = 4096
