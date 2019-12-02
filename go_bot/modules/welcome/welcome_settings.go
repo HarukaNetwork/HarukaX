@@ -122,9 +122,8 @@ func setWelcome(_ ext.Bot, u *gotgbot.Update) error {
 	return err
 }
 
-func resetWelcome(bot ext.Bot, u *gotgbot.Update) error {
+func resetWelcome(_ ext.Bot, u *gotgbot.Update) error {
 	chat := u.EffectiveChat
-
 	if !chat_status.IsUserAdmin(chat, u.EffectiveUser.Id) {
 		_, _ = u.EffectiveMessage.ReplyText("You need to be an admin to do this.")
 		return gotgbot.ContinueGroups{}
@@ -134,4 +133,37 @@ func resetWelcome(bot ext.Bot, u *gotgbot.Update) error {
 
 	_, err := u.EffectiveMessage.ReplyText("Succesfully reset custom welcome message to default!")
 	return err
+}
+
+func cleanWelcome(bot ext.Bot, u *gotgbot.Update, args []string) error {
+	chat := u.EffectiveChat
+	if !chat_status.IsUserAdmin(chat, u.EffectiveUser.Id) {
+		_, _ = u.EffectiveMessage.ReplyText("You need to be an admin to do this.")
+		return gotgbot.ContinueGroups{}
+	}
+
+	if len(args) == 0 {
+		cleanPref := sql.GetCleanWelcome(strconv.Itoa(chat.Id))
+		if cleanPref != 0 {
+			_, err := u.EffectiveMessage.ReplyText("I should be deleting welcome messages up to two days old.")
+			return err
+		} else {
+			_, err := u.EffectiveMessage.ReplyText("I'm currently not deleting old welcome messages!")
+			return err
+		}
+	} else {
+		switch strings.ToLower(args[0]) {
+		case "off", "no":
+			go sql.SetCleanWelcome(strconv.Itoa(chat.Id), 0)
+			_, err := u.EffectiveMessage.ReplyText("I'll try to delete old welcome messages!")
+			return err
+		case "on", "yes":
+			go sql.SetCleanWelcome(strconv.Itoa(chat.Id), 1)
+			_, err := u.EffectiveMessage.ReplyText("I'll try to delete old welcome messages!")
+			return err
+		default:
+			_, err := u.EffectiveMessage.ReplyText("I understand 'on/yes' or 'off/no' only!")
+			return err
+		}
+	}
 }

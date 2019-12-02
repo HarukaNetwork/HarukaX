@@ -77,8 +77,18 @@ func GetWelcomeButtons(chatID string) []WelcomeButton {
 
 // SetCleanWelcome Set whether to clean old welcome messages or not
 func SetCleanWelcome(chatID string, cw int) {
-	w := &Welcome{ChatId: chatID, CleanWelcome: cw}
-	SESSION.FirstOrCreate(&Welcome{ChatId: chatID}).Save(w)
+	w := &Welcome{ChatId: chatID}
+	tx := SESSION.Begin()
+	tx.FirstOrCreate(w)
+	w.CleanWelcome = cw
+	tx.Save(w)
+	tx.Commit()
+}
+
+func GetCleanWelcome(chatID string) int {
+	w := &Welcome{ChatId: chatID}
+	SESSION.FirstOrInit(w)
+	return w.CleanWelcome
 }
 
 // UserClickedButton Mark the user as a human
