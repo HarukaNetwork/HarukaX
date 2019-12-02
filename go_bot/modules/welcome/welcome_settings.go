@@ -135,7 +135,7 @@ func resetWelcome(_ ext.Bot, u *gotgbot.Update) error {
 	return err
 }
 
-func cleanWelcome(bot ext.Bot, u *gotgbot.Update, args []string) error {
+func cleanWelcome(_ ext.Bot, u *gotgbot.Update, args []string) error {
 	chat := u.EffectiveChat
 	if !chat_status.IsUserAdmin(chat, u.EffectiveUser.Id) {
 		_, _ = u.EffectiveMessage.ReplyText("You need to be an admin to do this.")
@@ -151,19 +151,52 @@ func cleanWelcome(bot ext.Bot, u *gotgbot.Update, args []string) error {
 			_, err := u.EffectiveMessage.ReplyText("I'm currently not deleting old welcome messages!")
 			return err
 		}
-	} else {
-		switch strings.ToLower(args[0]) {
-		case "off", "no":
-			go sql.SetCleanWelcome(strconv.Itoa(chat.Id), 0)
-			_, err := u.EffectiveMessage.ReplyText("I'll try to delete old welcome messages!")
+	}
+
+	switch strings.ToLower(args[0]) {
+	case "off", "no":
+		go sql.SetCleanWelcome(strconv.Itoa(chat.Id), 0)
+		_, err := u.EffectiveMessage.ReplyText("I'll try to delete old welcome messages!")
+		return err
+	case "on", "yes":
+		go sql.SetCleanWelcome(strconv.Itoa(chat.Id), 1)
+		_, err := u.EffectiveMessage.ReplyText("I'll try to delete old welcome messages!")
+		return err
+	default:
+		_, err := u.EffectiveMessage.ReplyText("I understand 'on/yes' or 'off/no' only!")
+		return err
+	}
+}
+
+func delJoined(bot ext.Bot, u *gotgbot.Update, args []string) error {
+	chat := u.EffectiveChat
+	if !chat_status.IsUserAdmin(chat, u.EffectiveUser.Id) {
+		_, _ = u.EffectiveMessage.ReplyText("You need to be an admin to do this.")
+		return gotgbot.ContinueGroups{}
+	}
+
+	if len(args) == 0 {
+		delPref := sql.GetDelPref(strconv.Itoa(chat.Id))
+		if delPref {
+			_, err := u.EffectiveMessage.ReplyMarkdown("I should be deleting `user` joined the chat messages now.")
 			return err
-		case "on", "yes":
-			go sql.SetCleanWelcome(strconv.Itoa(chat.Id), 1)
-			_, err := u.EffectiveMessage.ReplyText("I'll try to delete old welcome messages!")
-			return err
-		default:
-			_, err := u.EffectiveMessage.ReplyText("I understand 'on/yes' or 'off/no' only!")
+		} else {
+			_, err := u.EffectiveMessage.ReplyText("I'm currently not deleting joined messages.")
 			return err
 		}
+	}
+
+	switch strings.ToLower(args[0]) {
+	case "off", "no":
+		go sql.SetDelPref(strconv.Itoa(chat.Id), false)
+		_, err := u.EffectiveMessage.ReplyText("I won't delete joined messages.")
+		return err
+	case "on", "yes":
+		go sql.SetDelPref(strconv.Itoa(chat.Id), true)
+		_, err := u.EffectiveMessage.ReplyText("I'll try to delete joined messages!")
+		return err
+	default:
+		_, err := u.EffectiveMessage.ReplyText("I understand 'on/yes' or 'off/no' only!")
+		return err
 	}
 }

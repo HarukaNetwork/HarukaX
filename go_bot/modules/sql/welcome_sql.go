@@ -85,10 +85,9 @@ func SetCleanWelcome(chatID string, cw int) {
 	tx.Commit()
 }
 
+// GetCleanWelcome Get whether to clean old welcome messages or not
 func GetCleanWelcome(chatID string) int {
-	w := &Welcome{ChatId: chatID}
-	SESSION.FirstOrInit(w)
-	return w.CleanWelcome
+	return GetWelcomePrefs(chatID).CleanWelcome
 }
 
 // UserClickedButton Mark the user as a human
@@ -141,6 +140,21 @@ func SetCustomWelcome(chatID string, welcome string, buttons []WelcomeButton, we
 	tx.FirstOrCreate(w)
 	w.CustomWelcome = welcome
 	w.WelcomeType = welcType
+	tx.Save(w)
+	tx.Commit()
+}
+
+// GetDelPref Get Whether to delete service messages or not
+func GetDelPref(chatID string) bool {
+	return GetWelcomePrefs(chatID).DelJoined
+}
+
+// SetDelPref Set whether to delete service messages or not
+func SetDelPref(chatID string, pref bool) {
+	w := &Welcome{ChatId: chatID}
+	tx := SESSION.Begin()
+	tx.FirstOrCreate(w)
+	w.DelJoined = pref
 	tx.Save(w)
 	tx.Commit()
 }

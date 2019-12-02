@@ -43,6 +43,7 @@ func init() {
 
 	if go_bot.BotConfig.DebugMode {
 		SESSION = db.Debug()
+		log.Println("Using database in debug mode.")
 	} else {
 		SESSION = db
 	}
