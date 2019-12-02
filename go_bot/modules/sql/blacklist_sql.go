@@ -22,26 +22,49 @@
 
 package sql
 
+import (
+	"encoding/json"
+	"fmt"
+
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/caching"
+)
+
 type BlackListFilters struct {
-	ChatId  string `gorm:"primary_key"`
-	Trigger string `gorm:"primary_key"`
+	ChatID  string `gorm:"primary_key" json:"chat_id"`
+	Trigger string `gorm:"primary_key" json:"trigger"`
 }
 
-func AddToBlacklist(chatId string, trigger string) {
-	filter := &BlackListFilters{ChatId: chatId, Trigger: trigger}
+func AddToBlacklist(chatID string, trigger string) {
+	filter := &BlackListFilters{ChatID: chatID, Trigger: trigger}
 	SESSION.Save(filter)
+	go CacheBlacklist(chatID)
 }
 
-func RmFromBlacklist(chatId string, trigger string) bool {
-	filter := &BlackListFilters{ChatId: chatId, Trigger: trigger}
+func RmFromBlacklist(chatID string, trigger string) bool {
+	filter := &BlackListFilters{ChatID: chatID, Trigger: trigger}
+	defer func(chatID string) {
+		go CacheBlacklist(chatID)
+	}(chatID)
 	if SESSION.Delete(filter).RowsAffected == 0 {
 		return false
 	}
 	return true
 }
 
-func GetChatBlacklist(chatId string) []BlackListFilters {
+func GetChatBlacklist(chatID string) []BlackListFilters {
+	blf, err := caching.CACHE.Get(fmt.Sprintf("blacklist_%v", chatID))
+	if err != nil {
+		go CacheBlacklist(chatID)
+	}
+
+	var blistFilters []BlackListFilters
+	_ = json.Unmarshal(blf, &blistFilters)
+	return blistFilters
+}
+
+func CacheBlacklist(chatID string) {
 	var filters []BlackListFilters
-	SESSION.Where("chat_id = ?", chatId).Find(&filters)
-	return filters
+	SESSION.Where("chat_id = ?", chatID).Find(&filters)
+	blJson, _ := json.Marshal(filters)
+	_ = caching.CACHE.Set(fmt.Sprintf("blacklist_%v", chatID), blJson)
 }
