@@ -168,7 +168,7 @@ func cleanWelcome(_ ext.Bot, u *gotgbot.Update, args []string) error {
 	}
 }
 
-func delJoined(bot ext.Bot, u *gotgbot.Update, args []string) error {
+func delJoined(_ ext.Bot, u *gotgbot.Update, args []string) error {
 	chat := u.EffectiveChat
 	if !chat_status.IsUserAdmin(chat, u.EffectiveUser.Id) {
 		_, _ = u.EffectiveMessage.ReplyText("You need to be an admin to do this.")
@@ -193,6 +193,39 @@ func delJoined(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		return err
 	case "on", "yes":
 		go sql.SetDelPref(strconv.Itoa(chat.Id), true)
+		_, err := u.EffectiveMessage.ReplyText("I'll try to delete joined messages!")
+		return err
+	default:
+		_, err := u.EffectiveMessage.ReplyText("I understand 'on/yes' or 'off/no' only!")
+		return err
+	}
+}
+
+func welcomeMute(_ ext.Bot, u *gotgbot.Update, args []string) error {
+	chat := u.EffectiveChat
+	if !chat_status.IsUserAdmin(chat, u.EffectiveUser.Id) {
+		_, _ = u.EffectiveMessage.ReplyText("You need to be an admin to do this.")
+		return gotgbot.ContinueGroups{}
+	}
+
+	if len(args) == 0 {
+		welcPref := sql.GetWelcomePrefs(strconv.Itoa(chat.Id))
+		if welcPref.ShouldMute {
+			_, err := u.EffectiveMessage.ReplyMarkdown("I'm currently muting users when they join.")
+			return err
+		} else {
+			_, err := u.EffectiveMessage.ReplyText("I'm currently not muting users when they join.")
+			return err
+		}
+	}
+
+	switch strings.ToLower(args[0]) {
+	case "off", "no":
+		go sql.SetMutePref(strconv.Itoa(chat.Id), false)
+		_, err := u.EffectiveMessage.ReplyText("I won't delete joined messages.")
+		return err
+	case "on", "yes":
+		go sql.SetMutePref(strconv.Itoa(chat.Id), true)
 		_, err := u.EffectiveMessage.ReplyText("I'll try to delete joined messages!")
 		return err
 	default:

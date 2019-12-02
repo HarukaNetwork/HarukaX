@@ -158,3 +158,13 @@ func SetDelPref(chatID string, pref bool) {
 	tx.Save(w)
 	tx.Commit()
 }
+
+// SetMutePref Set whether to mute users when they join or not
+func SetMutePref(chatID string, pref bool) {
+	w := &Welcome{ChatId: chatID}
+	tx := SESSION.Begin()
+	tx.FirstOrCreate(w)
+	w.ShouldMute = pref
+	tx.Save(w)
+	tx.Commit()
+}
