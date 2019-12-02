@@ -40,7 +40,13 @@ func init() {
 
 	db, err := gorm.Open("postgres", conn)
 	error_handling.FatalError(err)
-	SESSION = db.Debug()
+
+	if go_bot.BotConfig.DebugMode {
+		SESSION = db.Debug()
+	} else {
+		SESSION = db
+	}
+
 
 	if go_bot.BotConfig.Heroku {
 		db.DB().SetMaxOpenConns(20)

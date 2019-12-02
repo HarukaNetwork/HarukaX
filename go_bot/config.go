@@ -35,12 +35,13 @@ type Config struct {
 	BotName       string
 	ApiKey        string
 	OwnerName     string
-	OwnerId       int
-	SudoUsers     []string
-	LoadPlugins   []string
 	SqlUri        string
 	RedisAddress  string
 	RedisPassword string
+	OwnerId       int
+	SudoUsers     []string
+	LoadPlugins   []string
+	DebugMode     bool
 	Heroku        bool
 }
 
@@ -91,8 +92,9 @@ func init() {
 		returnConfig.RedisPassword = ""
 	}
 
+	_, returnConfig.DebugMode = os.LookupEnv("DEBUG")
+
 	_, returnConfig.Heroku = os.LookupEnv("HEROKU")
 
 	BotConfig = returnConfig
-
 }
