@@ -47,7 +47,6 @@ func init() {
 		SESSION = db
 	}
 
-
 	if go_bot.BotConfig.Heroku {
 		db.DB().SetMaxOpenConns(20)
 	} else {

@@ -22,6 +22,7 @@ The available fields for the .env file are as follows:
 * `DATABASE_URI`: Self explanatory (postgres)
 * `SUDO_USERS`: A list of userIDs, separated by spaces, who should have sudo access to the bot
 * `HEROKU`: Setting this to **anything** will activate it. Use if you're using a heroku database
+* `DEBUG`: Setting this to **anything** will activate it. Use it if you're debugging something.
 
 
 ## Starting the bot
