@@ -51,9 +51,9 @@ type FedChat struct {
 }
 
 type FedBan struct {
-	FedRef string `gorm:"primary_key"`
-	UserId string `gorm:"primary_key"`
-	Reason string
+	FedRef string `gorm:"primary_key" json:"fed_ref"`
+	UserId string `gorm:"primary_key" json:"user_id"`
+	Reason string `json:"reason"`
 }
 
 func GetFedInfo(fedId string) *Federation {
