@@ -44,6 +44,10 @@ type Config struct {
 	LoadPlugins   []string
 	DebugMode     bool
 	Heroku        bool
+	Webhooks      bool
+	WebhookURL    string
+	WebhookIP     string
+	WebhookPort   int
 }
 
 var BotConfig Config
@@ -96,6 +100,25 @@ func init() {
 	_, returnConfig.DebugMode = os.LookupEnv("DEBUG")
 
 	_, returnConfig.Heroku = os.LookupEnv("HEROKU")
+
+	_, returnConfig.Webhooks = os.LookupEnv("WEBHOOKS")
+
+	returnConfig.WebhookURL, ok = os.LookupEnv("WEBHOOK_URL")
+	if !ok {
+		returnConfig.WebhookURL = ""
+	}
+
+	returnConfig.WebhookIP, ok = os.LookupEnv("WEBHOOK_IP")
+	if !ok {
+		returnConfig.WebhookIP = "0.0.0.0"
+	}
+
+	port, ok := os.LookupEnv("WEBHOOK_PORT")
+	if ok {
+		returnConfig.WebhookPort, _ = strconv.Atoi(port)
+	} else {
+		returnConfig.WebhookPort = 8080
+	}
 
 	BotConfig = returnConfig
 }

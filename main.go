@@ -23,6 +23,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/ATechnoHazard/ginko/go_bot"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/admin"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/bans"
@@ -42,7 +44,6 @@ import (
 	"github.com/PaulSonOfLars/gotgbot"
 	"github.com/PaulSonOfLars/gotgbot/ext"
 	"github.com/PaulSonOfLars/gotgbot/handlers"
-	"log"
 )
 
 func main() {
@@ -74,9 +75,27 @@ func main() {
 	help.LoadHelp(u)
 	welcome.LoadWelcome(u)
 
-	log.Println("Starting long polling")
-	err = u.StartPolling()
-	error_handling.HandleErr(err)
+	if go_bot.BotConfig.Webhooks {
+		webhook := gotgbot.Webhook{
+			Serve:          go_bot.BotConfig.WebhookIP,
+			ServePort:      go_bot.BotConfig.WebhookPort,
+			ServePath:      u.Bot.Token,
+			URL:            go_bot.BotConfig.WebhookURL,
+			MaxConnections: 30,
+		}
+		log.Println("Starting webhook")
+		u.StartWebhook(webhook)
+		ok, err := u.SetWebhook(u.Bot.Token, webhook)
+		error_handling.FatalError(err)
+		if !ok {
+			log.Fatal("Failed to set webhook!")
+		}
+	} else {
+		log.Println("Starting long polling")
+		err = u.StartPolling()
+		error_handling.HandleErr(err)
+	}
+
 	u.Idle()
 }
 
