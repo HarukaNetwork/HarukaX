@@ -24,12 +24,13 @@ package feds
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/extraction"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/helpers"
 	"github.com/PaulSonOfLars/gotgbot"
 	"github.com/PaulSonOfLars/gotgbot/ext"
-	"strconv"
 )
 
 func chatFed(_ ext.Bot, u *gotgbot.Update) error {
@@ -85,7 +86,7 @@ func fedInfo(_ ext.Bot, u *gotgbot.Update, args []string) error {
 		"\nNumber of bans: <code>%v</code>"+
 		"\nNumber of connected chats: <code>%v</code>", fed.Id, fed.FedName, helpers.MentionHtml(ownerId, "this person"),
 		len(sql.GetFedAdmins(fedId))+1,
-		len(sql.GetAllFbanUsers(fedId)),
+		sql.GetFbanUsersCount(fedId),
 		len(sql.AllFedChats(fedId)))
 
 	_, err := msg.ReplyHTML(text)

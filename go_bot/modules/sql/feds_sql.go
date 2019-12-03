@@ -23,6 +23,11 @@
 package sql
 
 import (
+	"encoding/json"
+	"fmt"
+	"log"
+
+	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/caching"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 )
 
@@ -86,6 +91,9 @@ func NewFed(ownerId string, fedId string, fedName string) bool {
 } // No dirty read
 
 func DelFed(fedId string) {
+	defer func(fedId string) {
+		go unCacheFban(fedId)
+	}(fedId)
 	tx := SESSION.Begin()
 
 	fed := &Federation{}
@@ -157,27 +165,38 @@ func AllFedChats(fedId string) []string {
 } // no dirty read
 
 func FbanUser(fedId string, userId string, reason string) {
+	defer func(fedId string, userId string) {
+		go cacheFbans(fedId, userId)
+	}(fedId, userId)
 	ban := &FedBan{FedRef: fedId, UserId: userId, Reason: reason}
 	SESSION.Save(ban)
 } // no dirty read
 
 func UnFbanUser(fedId string, userId string) {
+	defer func(fedId string, userId string) {
+		go cacheFbans(fedId, userId)
+	}(fedId, userId)
 	ban := &FedBan{FedRef: fedId, UserId: userId}
 	SESSION.Delete(ban)
 } // no dirty read
 
 func GetFbanUser(fedId string, userId string) *FedBan {
-	ban := &FedBan{FedRef: fedId, UserId: userId}
-	if SESSION.First(ban).RowsAffected == 0 {
-		return nil
+	banJson, err := caching.CACHE.Get(fmt.Sprintf("fban_%v_%v", fedId, userId))
+	if err != nil {
+		go cacheFbans(fedId, userId)
 	}
-	return ban
+
+	var ban FedBan
+	_ = json.Unmarshal(banJson, &ban)
+
+	return &ban
 } // no dirty read
 
-func GetAllFbanUsers(fedId string) []FedBan {
-	var bans []FedBan
-	SESSION.Where("id = ?", fedId).Find(&bans)
-	return bans
+func GetFbanUsersCount(fedId string) int {
+	count := 0
+	bans := &FedBan{}
+	SESSION.Model(bans).Where("fed_ref = ?", fedId).Count(&count)
+	return count
 } // no dirty read
 
 func GetUserFbans(userId string) []Federation {
@@ -210,4 +229,23 @@ func GetFedAdmins(fedId string) []FedAdmin {
 	var admins []FedAdmin
 	SESSION.Where("fed_ref = ?", fedId).Find(&admins)
 	return admins
+}
+
+func cacheFbans(fedId string, userId string) {
+	fban := &FedBan{FedRef: fedId, UserId: userId}
+	SESSION.First(fban)
+	fJson, _ := json.Marshal(fban)
+	err := caching.CACHE.Set(fmt.Sprintf("fban_%v_%v", fedId, userId), fJson)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func unCacheFban(fedId string) {
+	var fbans []FedBan
+	bans := &FedBan{}
+	SESSION.Model(bans).Where("fed_ref = ?", fedId).Find(&fbans)
+	for _, fban := range fbans {
+		_ = caching.CACHE.Delete(fmt.Sprintf("fban_%v_%v", fedId, fban.UserId))
+	}
 }
