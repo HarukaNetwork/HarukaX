@@ -58,7 +58,7 @@ type FedBan struct {
 
 func GetFedInfo(fedId string) *Federation {
 	fed := &Federation{Id: fedId}
-	if SESSION.First(fed).RowsAffected == 0 {
+	if SESSION.Where("id = ?", fedId).First(fed).RowsAffected == 0 {
 		return nil
 	}
 	return fed
@@ -184,6 +184,7 @@ func GetFbanUser(fedId string, userId string) *FedBan {
 	banJson, err := caching.CACHE.Get(fmt.Sprintf("fban_%v_%v", fedId, userId))
 	if err != nil {
 		go cacheFbans(fedId, userId)
+		return nil
 	}
 
 	var ban FedBan
@@ -233,11 +234,12 @@ func GetFedAdmins(fedId string) []FedAdmin {
 
 func cacheFbans(fedId string, userId string) {
 	fban := &FedBan{FedRef: fedId, UserId: userId}
-	SESSION.First(fban)
-	fJson, _ := json.Marshal(fban)
-	err := caching.CACHE.Set(fmt.Sprintf("fban_%v_%v", fedId, userId), fJson)
-	if err != nil {
-		log.Println(err)
+	if SESSION.First(fban).RowsAffected != 0 {
+		fJson, _ := json.Marshal(fban)
+		err := caching.CACHE.Set(fmt.Sprintf("fban_%v_%v", fedId, userId), fJson)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
 

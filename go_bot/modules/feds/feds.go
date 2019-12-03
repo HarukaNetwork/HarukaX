@@ -24,6 +24,9 @@ package feds
 
 import (
 	"fmt"
+	"log"
+	"strconv"
+
 	"github.com/ATechnoHazard/ginko/go_bot"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/chat_status"
@@ -34,8 +37,6 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/ext"
 	"github.com/PaulSonOfLars/gotgbot/handlers"
 	"github.com/PaulSonOfLars/gotgbot/handlers/Filters"
-	"log"
-	"strconv"
 )
 
 func fedBan(bot ext.Bot, u *gotgbot.Update, args []string) error {
@@ -222,11 +223,12 @@ func fedCheckBan(bot ext.Bot, u *gotgbot.Update) error {
 		_, err := msg.Delete()
 		error_handling.HandleErr(err)
 		_, err = bot.KickChatMember(chat.Id, user.Id)
-		error_handling.HandleErr(err)
-		_, err = bot.SendMessageHTML(chat.Id, fmt.Sprintf("User %v is banned in the current federation "+
-			"(%v), and so has been removed."+
-			"\n<b>Reason</b>: %v", helpers.MentionHtml(user.Id, user.FirstName), fed.FedName, member.Reason))
-		return err
+		if err == nil {
+			_, err = bot.SendMessageHTML(chat.Id, fmt.Sprintf("User %v is banned in the current federation "+
+				"(%v), and so has been removed."+
+				"\n<b>Reason</b>: %v", helpers.MentionHtml(user.Id, user.FirstName), fed.FedName, member.Reason))
+			return err
+		}
 	}
 	return gotgbot.ContinueGroups{}
 }
