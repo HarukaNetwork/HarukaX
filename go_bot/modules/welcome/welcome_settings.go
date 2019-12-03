@@ -222,11 +222,11 @@ func welcomeMute(_ ext.Bot, u *gotgbot.Update, args []string) error {
 	switch strings.ToLower(args[0]) {
 	case "off", "no":
 		go sql.SetMutePref(strconv.Itoa(chat.Id), false)
-		_, err := u.EffectiveMessage.ReplyText("I won't delete joined messages.")
+		_, err := u.EffectiveMessage.ReplyText("I won't mute new users when they join.")
 		return err
 	case "on", "yes":
 		go sql.SetMutePref(strconv.Itoa(chat.Id), true)
-		_, err := u.EffectiveMessage.ReplyText("I'll try to delete joined messages!")
+		_, err := u.EffectiveMessage.ReplyText("I'll try to mute new users when they join!")
 		return err
 	default:
 		_, err := u.EffectiveMessage.ReplyText("I understand 'on/yes' or 'off/no' only!")
