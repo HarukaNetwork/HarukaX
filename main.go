@@ -114,7 +114,8 @@ func start(_ ext.Bot, u *gotgbot.Update, args []string) error {
 					_, err := msg.ReplyHTML(chatRules.Rules)
 					return err
 				}
-				_, err := msg.ReplyText("That is not a valid chat ID!")
+				_, err := msg.ReplyText("The group admins haven't set any rules for this chat yet. This probably doesn't " +
+					"mean it's lawless though!")
 				log.Println(args[0])
 				return err
 			}
