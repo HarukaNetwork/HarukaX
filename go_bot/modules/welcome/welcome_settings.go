@@ -80,7 +80,7 @@ func welcome(bot ext.Bot, u *gotgbot.Update, args []string) error {
 			} else {
 				keyb := helpers.BuildWelcomeKeyboard(buttons)
 				keyboard := ext.InlineKeyboardMarkup{InlineKeyboard: &keyb}
-				send(bot, u, welcPrefs.CustomWelcome, &keyboard, sql.DefaultWelcome)
+				send(bot, u, welcPrefs.CustomWelcome, &keyboard, sql.DefaultWelcome, !welcPrefs.DelJoined)
 			}
 		} else {
 			_, err := EnumFuncMap[welcPrefs.WelcomeType](bot, chat.Id, welcPrefs.CustomWelcome) // needs change
