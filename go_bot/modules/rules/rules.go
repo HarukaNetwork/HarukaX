@@ -18,6 +18,11 @@ func sendRules(bot ext.Bot, u *gotgbot.Update) error {
 	rules := sql.GetChatRules(strconv.Itoa(u.EffectiveChat.Id))
 	log.Println(rules)
 
+	if u.EffectiveChat.Type == "private" {
+		_, err := u.EffectiveMessage.ReplyText("This command is meant to be used in a group!")
+		return err
+	}
+
 	if rules != nil {
 		if rules.Rules != "" {
 			msg := bot.NewSendableMessage(u.EffectiveChat.Id, "Contact me in PM to get this group's rules.")

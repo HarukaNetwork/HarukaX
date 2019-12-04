@@ -24,6 +24,7 @@ package main
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/ATechnoHazard/ginko/go_bot/modules/rules"
 
@@ -107,13 +108,14 @@ func start(_ ext.Bot, u *gotgbot.Update, args []string) error {
 
 	if u.EffectiveChat.Type == "private" {
 		if len(args) != 0 {
-			if args[0][0] == '-' {
+			if _, err := strconv.Atoi(args[0][2:]); err == nil {
 				chatRules := sql.GetChatRules(args[0])
 				if chatRules != nil {
 					_, err := msg.ReplyHTML(chatRules.Rules)
 					return err
 				}
 				_, err := msg.ReplyText("That is not a valid chat ID!")
+				log.Println(args[0])
 				return err
 			}
 		}

@@ -23,6 +23,7 @@
 package welcome
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -61,6 +62,17 @@ func welcome(bot ext.Bot, u *gotgbot.Update, args []string) error {
 
 		if welcPrefs.WelcomeType == sql.BUTTON_TEXT {
 			buttons := sql.GetWelcomeButtons(strconv.Itoa(chat.Id))
+			if strings.Contains(welcPrefs.CustomWelcome, "{rules}") {
+				rulesButton := sql.WelcomeButton{
+					Id:       0,
+					ChatId:   strconv.Itoa(u.EffectiveChat.Id),
+					Name:     "Rules",
+					Url:      fmt.Sprintf("t.me/%v?start=%v", bot.UserName, u.EffectiveChat.Id),
+					SameLine: false,
+				}
+				buttons = append(buttons, rulesButton)
+				strings.ReplaceAll(welcPrefs.CustomWelcome, "{rules}", "")
+			}
 			if noformat {
 				welcPrefs.CustomWelcome += helpers.RevertButtons(buttons)
 				_, err := u.EffectiveMessage.ReplyHTML(welcPrefs.CustomWelcome)
