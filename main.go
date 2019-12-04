@@ -25,6 +25,8 @@ package main
 import (
 	"log"
 
+	"github.com/ATechnoHazard/ginko/go_bot/modules/rules"
+
 	"github.com/ATechnoHazard/ginko/go_bot"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/admin"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/bans"
@@ -52,7 +54,7 @@ func main() {
 	error_handling.FatalError(err)
 
 	// Add start handler
-	u.Dispatcher.AddHandler(handlers.NewCommand("start", start))
+	u.Dispatcher.AddHandler(handlers.NewArgsCommand("start", start))
 
 	// Create database tables if not already existing
 	sql.EnsureBotInDb(u)
@@ -74,6 +76,7 @@ func main() {
 	notes.LoadNotes(u)
 	help.LoadHelp(u)
 	welcome.LoadWelcome(u)
+	rules.LoadRules(u)
 
 	if go_bot.BotConfig.Webhooks {
 		webhook := gotgbot.Webhook{
@@ -99,10 +102,24 @@ func main() {
 	u.Idle()
 }
 
-func start(_ ext.Bot, u *gotgbot.Update) error {
+func start(_ ext.Bot, u *gotgbot.Update, args []string) error {
 	msg := u.EffectiveMessage
+
+	if u.EffectiveChat.Type == "private" {
+		if len(args) != 0 {
+			if args[0][0] == '-' {
+				chatRules := sql.GetChatRules(args[0])
+				if chatRules != nil {
+					_, err := msg.ReplyHTML(chatRules.Rules)
+					return err
+				}
+				_, err := msg.ReplyText("That is not a valid chat ID!")
+				return err
+			}
+		}
+	}
+
 	_, err := msg.ReplyTextf("Hi there! I'm a telegram group management bot, written in Go." +
 		"\nFor any questions or bug reports, you can head over to @gobotsupport.")
-	error_handling.HandleErr(err)
-	return nil
+	return err
 }
