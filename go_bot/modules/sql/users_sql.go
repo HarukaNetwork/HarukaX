@@ -60,6 +60,7 @@ func UpdateUser(userId int, username string, chatId string, chatName string) {
 	tx.Save(user)
 
 	if chatId == "nil" || chatName == "nil" {
+		tx.Commit()
 		return
 	}
 
