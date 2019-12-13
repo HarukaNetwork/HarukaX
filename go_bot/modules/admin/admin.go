@@ -24,6 +24,11 @@ package admin
 
 import (
 	"fmt"
+	"html"
+	"log"
+	"strconv"
+	"strings"
+
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/chat_status"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/extraction"
@@ -32,10 +37,6 @@ import (
 	"github.com/PaulSonOfLars/gotgbot"
 	"github.com/PaulSonOfLars/gotgbot/ext"
 	"github.com/PaulSonOfLars/gotgbot/handlers"
-	"html"
-	"log"
-	"strconv"
-	"strings"
 )
 
 func promote(bot ext.Bot, u *gotgbot.Update, args []string) error {
@@ -52,7 +53,7 @@ func promote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	if !chat_status.RequireBotAdmin(chat, message) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireUserAdmin(chat, message, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, message, user.Id) {
 		return gotgbot.EndGroups{}
 	}
 	if !chat_status.CanPromote(bot, chat) {
@@ -110,7 +111,7 @@ func demote(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	if !chat_status.RequireBotAdmin(chat, message) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireUserAdmin(chat, message, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, message, user.Id) {
 		return gotgbot.EndGroups{}
 	}
 	if !chat_status.CanPromote(bot, chat) {
@@ -157,7 +158,7 @@ func pin(bot ext.Bot, u *gotgbot.Update, args []string) error {
 		_, err := msg.ReplyText("This command is meant to be used in a group!")
 		return err
 	}
-	if !chat_status.RequireUserAdmin(chat, msg, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, msg, user.Id) {
 		return gotgbot.EndGroups{}
 	}
 	if !chat_status.RequireBotAdmin(chat, msg) {
@@ -194,7 +195,7 @@ func unpin(bot ext.Bot, u *gotgbot.Update) error {
 		_, err := msg.ReplyText("This command is meant to be used in a group!")
 		return err
 	}
-	if !chat_status.RequireUserAdmin(chat, msg, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, msg, user.Id) {
 		return gotgbot.EndGroups{}
 	}
 	if !chat_status.RequireBotAdmin(chat, msg) {
@@ -218,7 +219,7 @@ func invitelink(bot ext.Bot, u *gotgbot.Update) error {
 		_, err := message.ReplyText("This command is meant to be used in a group!")
 		return err
 	}
-	if !chat_status.RequireUserAdmin(chat, message, user.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, message, user.Id) {
 		return gotgbot.EndGroups{}
 	}
 	if !chat_status.RequireBotAdmin(chat, message) {

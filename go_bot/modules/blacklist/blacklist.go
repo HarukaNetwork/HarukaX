@@ -24,6 +24,12 @@ package blacklist
 
 import (
 	"fmt"
+	"html"
+	"log"
+	"regexp"
+	"strconv"
+	"strings"
+
 	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/chat_status"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
@@ -33,11 +39,6 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/ext"
 	"github.com/PaulSonOfLars/gotgbot/handlers"
 	"github.com/PaulSonOfLars/gotgbot/handlers/Filters"
-	"html"
-	"log"
-	"regexp"
-	"strconv"
-	"strings"
 )
 
 func blacklist(_ ext.Bot, u *gotgbot.Update, args []string) error {
@@ -77,7 +78,7 @@ func addBlacklist(_ ext.Bot, u *gotgbot.Update) error {
 	if !chat_status.RequireBotAdmin(chat, msg) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireUserAdmin(chat, msg, u.EffectiveUser.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, msg, u.EffectiveUser.Id) {
 		return gotgbot.EndGroups{}
 	}
 
@@ -116,7 +117,7 @@ func unblacklist(_ ext.Bot, u *gotgbot.Update) error {
 	if !chat_status.RequireBotAdmin(chat, msg) {
 		return gotgbot.EndGroups{}
 	}
-	if !chat_status.RequireUserAdmin(chat, msg, u.EffectiveUser.Id, nil) {
+	if !chat_status.RequireUserAdmin(chat, msg, u.EffectiveUser.Id) {
 		return gotgbot.EndGroups{}
 	}
 

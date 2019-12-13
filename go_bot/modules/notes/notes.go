@@ -24,6 +24,11 @@ package notes
 
 import (
 	"fmt"
+	"html"
+	"log"
+	"strconv"
+	"strings"
+
 	"github.com/ATechnoHazard/ginko/go_bot/modules/sql"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/chat_status"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
@@ -33,10 +38,6 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/ext"
 	"github.com/PaulSonOfLars/gotgbot/handlers"
 	"github.com/PaulSonOfLars/gotgbot/parsemode"
-	"html"
-	"log"
-	"strconv"
-	"strings"
 )
 
 func get(bot ext.Bot, u *gotgbot.Update, noteName string, showNone bool, noFormat bool) error {
@@ -190,7 +191,7 @@ func save(_ ext.Bot, u *gotgbot.Update) error {
 	msg := u.EffectiveMessage
 	noteName, text, dataType, content, buttons := helpers.GetNoteType(msg)
 
-	if !chat_status.RequireUserAdmin(u.EffectiveChat, msg, u.EffectiveUser.Id, nil) {
+	if !chat_status.RequireUserAdmin(u.EffectiveChat, msg, u.EffectiveUser.Id) {
 		return gotgbot.ContinueGroups{}
 	}
 
@@ -217,7 +218,7 @@ func save(_ ext.Bot, u *gotgbot.Update) error {
 func clear(_ ext.Bot, u *gotgbot.Update, args []string) error {
 	chatId := u.EffectiveChat.Id
 
-	if !chat_status.RequireUserAdmin(u.EffectiveChat, u.EffectiveMessage, u.EffectiveUser.Id, nil) {
+	if !chat_status.RequireUserAdmin(u.EffectiveChat, u.EffectiveMessage, u.EffectiveUser.Id) {
 		return gotgbot.ContinueGroups{}
 	}
 

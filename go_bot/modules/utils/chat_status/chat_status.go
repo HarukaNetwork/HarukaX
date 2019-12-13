@@ -101,7 +101,7 @@ func RequireBotAdmin(chat *ext.Chat, msg *ext.Message) bool {
 	return true
 }
 
-func RequireUserAdmin(chat *ext.Chat, msg *ext.Message, userId int, member *ext.ChatMember) bool {
+func RequireUserAdmin(chat *ext.Chat, msg *ext.Message, userId int) bool {
 	if !IsUserAdmin(chat, userId) {
 		_, err := msg.ReplyText("You must be an admin to perform this action.")
 		error_handling.HandleErr(err)
