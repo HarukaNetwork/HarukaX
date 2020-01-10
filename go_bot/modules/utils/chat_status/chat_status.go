@@ -27,6 +27,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/wI2L/jettison"
+
 	"github.com/ATechnoHazard/ginko/go_bot"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/caching"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
@@ -60,16 +62,40 @@ func IsUserBanProtected(chat *ext.Chat, userId int, member *ext.ChatMember) bool
 }
 
 func IsUserAdmin(chat *ext.Chat, userId int) bool {
-	if chat.Type == "private" || contains(go_bot.BotConfig.SudoUsers, strconv.Itoa(userId)) {
+	if chat.Type == "private" || containsID(go_bot.BotConfig.SudoUsers, userId) {
 		return true
 	}
 
-	admins, _ := caching.CACHE.Get(fmt.Sprintf("admin_%v", chat.Id))
-	go cacheAdmins(chat)
+	var adminList []ext.ChatMember
 
-	var adminList Cache
+	// try to find admins in cache
+	admins, err := caching.CACHE.Get(fmt.Sprintf("admin_%v", chat.Id))
+	if err != nil { // cache miss
+		adminList, err = chat.GetAdministrators()
+		if err != nil { // not found
+			return false
+		}
+		// found using API, save to cache
+		cacheAdmins(adminList, chat.Id)
+		return contains(adminList, userId)
+	}
+
 	_ = json.Unmarshal(admins, &adminList)
-	return contains(adminList.Admin, strconv.Itoa(userId))
+	return contains(adminList, userId)
+}
+
+func containsID(sudos []string, userID int) bool {
+	for _, a := range sudos {
+		if strconv.Itoa(userID) == a {
+			return true
+		}
+	}
+	return false
+}
+
+func cacheAdmins(adminList []ext.ChatMember, chatID int) {
+	adminJson, _ := jettison.Marshal(adminList)
+	_ = caching.CACHE.Set(fmt.Sprintf("admin_%v", chatID), adminJson)
 }
 
 func IsBotAdmin(chat *ext.Chat, member *ext.ChatMember) bool {
@@ -153,26 +179,11 @@ func CanRestrict(bot ext.Bot, chat *ext.Chat) bool {
 	return true
 }
 
-func contains(s []string, e string) bool {
+func contains(s []ext.ChatMember, e int) bool {
 	for _, a := range s {
-		if a == e {
+		if a.User.Id == e {
 			return true
 		}
 	}
 	return false
-}
-
-func cacheAdmins(chat *ext.Chat) {
-	adminList, err := chat.GetAdministrators()
-	error_handling.HandleErr(err)
-	admins := make([]string, 0)
-
-	for _, admin := range adminList {
-		admins = append(admins, strconv.Itoa(admin.User.Id))
-	}
-
-	adminCache := &Cache{admins}
-	adminJson, _ := json.Marshal(adminCache)
-	err = caching.CACHE.Set(fmt.Sprintf("admin_%v", chat.Id), adminJson)
-	error_handling.HandleErr(err)
 }
