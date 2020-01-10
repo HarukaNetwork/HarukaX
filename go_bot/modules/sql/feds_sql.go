@@ -27,6 +27,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/wI2L/jettison"
+
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/caching"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 )
@@ -92,7 +94,7 @@ func NewFed(ownerId string, fedId string, fedName string) bool {
 
 func DelFed(fedId string) {
 	defer func(fedId string) {
-		go unCacheFban(fedId)
+		unCacheFban(fedId)
 	}(fedId)
 	tx := SESSION.Begin()
 
@@ -166,7 +168,7 @@ func AllFedChats(fedId string) []string {
 
 func FbanUser(fedId string, userId string, reason string) {
 	defer func(fedId string, userId string) {
-		go cacheFbans(fedId, userId)
+		cacheFbans(fedId, userId)
 	}(fedId, userId)
 	ban := &FedBan{FedRef: fedId, UserId: userId, Reason: reason}
 	SESSION.Save(ban)
@@ -174,7 +176,7 @@ func FbanUser(fedId string, userId string, reason string) {
 
 func UnFbanUser(fedId string, userId string) {
 	defer func(fedId string, userId string) {
-		go cacheFbans(fedId, userId)
+		cacheFbans(fedId, userId)
 	}(fedId, userId)
 	ban := &FedBan{FedRef: fedId, UserId: userId}
 	SESSION.Delete(ban)
@@ -183,7 +185,7 @@ func UnFbanUser(fedId string, userId string) {
 func GetFbanUser(fedId string, userId string) *FedBan {
 	banJson, err := caching.CACHE.Get(fmt.Sprintf("fban_%v_%v", fedId, userId))
 	if err != nil {
-		go cacheFbans(fedId, userId)
+		cacheFbans(fedId, userId)
 		return nil
 	}
 
@@ -235,7 +237,7 @@ func GetFedAdmins(fedId string) []FedAdmin {
 func cacheFbans(fedId string, userId string) {
 	fban := &FedBan{FedRef: fedId, UserId: userId}
 	if SESSION.First(fban).RowsAffected != 0 {
-		fJson, _ := json.Marshal(fban)
+		fJson, _ := jettison.Marshal(fban)
 		err := caching.CACHE.Set(fmt.Sprintf("fban_%v_%v", fedId, userId), fJson)
 		if err != nil {
 			log.Println(err)

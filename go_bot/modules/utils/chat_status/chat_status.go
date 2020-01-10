@@ -46,7 +46,7 @@ func CanDelete(chat *ext.Chat, botId int) bool {
 }
 
 func IsUserBanProtected(chat *ext.Chat, userId int, member *ext.ChatMember) bool {
-	if chat.Type == "private" || contains(go_bot.BotConfig.SudoUsers, strconv.Itoa(userId)) {
+	if chat.Type == "private" || containsID(go_bot.BotConfig.SudoUsers, userId) {
 		return true
 	}
 	if member == nil {

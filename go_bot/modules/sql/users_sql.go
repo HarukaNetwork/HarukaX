@@ -27,6 +27,8 @@ import (
 	"log"
 	"strings"
 
+	"github.com/wI2L/jettison"
+
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/caching"
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/error_handling"
 	"github.com/PaulSonOfLars/gotgbot"
@@ -95,7 +97,7 @@ func cacheUser() {
 	user := &User{}
 	var users []User
 	SESSION.Model(user).Find(&users)
-	userJson, _ := json.Marshal(users)
+	userJson, _ := jettison.Marshal(users)
 	err := caching.CACHE.Set("users", userJson)
 	error_handling.HandleErr(err)
 }

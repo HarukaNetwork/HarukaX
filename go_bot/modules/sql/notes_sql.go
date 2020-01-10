@@ -26,6 +26,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/wI2L/jettison"
+
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/caching"
 )
 
@@ -61,7 +63,7 @@ type Button struct {
 
 func AddNoteToDb(chatId string, noteName string, noteData string, msgtype int, buttons []Button, file string) {
 	defer func() {
-		go cacheNote(chatId, noteName)
+		cacheNote(chatId, noteName)
 	}()
 	if buttons == nil {
 		buttons = make([]Button, 0)
@@ -90,7 +92,7 @@ func AddNoteToDb(chatId string, noteName string, noteData string, msgtype int, b
 func GetNote(chatId string, noteName string) *Note {
 	notes, err := caching.CACHE.Get(fmt.Sprintf("note_%v", chatId))
 	if err != nil {
-		go cacheNote(chatId, noteName)
+		cacheNote(chatId, noteName)
 	}
 
 	var n []Note
@@ -108,7 +110,7 @@ func GetNote(chatId string, noteName string) *Note {
 func RmNote(chatId string, noteName string) bool {
 	tx := SESSION.Begin()
 	defer func() {
-		go cacheNote(chatId, noteName)
+		cacheNote(chatId, noteName)
 	}()
 	note := &Note{ChatId: chatId, Name: noteName}
 
@@ -131,7 +133,7 @@ func RmNote(chatId string, noteName string) bool {
 func GetAllChatNotes(chatId string) []Note {
 	notes, err := caching.CACHE.Get(fmt.Sprintf("note_%v", chatId))
 	if err != nil {
-		go cacheNote(chatId, "")
+		cacheNote(chatId, "")
 	}
 
 	var n []Note
@@ -142,7 +144,7 @@ func GetAllChatNotes(chatId string) []Note {
 func GetButtons(chatId string, noteName string) []Button {
 	buttons, err := caching.CACHE.Get(fmt.Sprintf("button_%v_%v", chatId, noteName))
 	if err != nil {
-		go cacheNote(chatId, noteName)
+		cacheNote(chatId, noteName)
 	}
 	var btns []Button
 	_ = json.Unmarshal(buttons, &btns)
@@ -160,14 +162,14 @@ func cacheNote(chatId string, noteName string) {
 
 	if notes != nil {
 		if len(notes) != 0 {
-			nJson, _ := json.Marshal(notes)
+			nJson, _ := jettison.Marshal(notes)
 			_ = caching.CACHE.Set(fmt.Sprintf("note_%v", chatId), nJson)
 		}
 	}
 
 	if buttons != nil {
 		if len(buttons) != 0 {
-			nButtons, _ := json.Marshal(buttons)
+			nButtons, _ := jettison.Marshal(buttons)
 			_ = caching.CACHE.Set(fmt.Sprintf("button_%v_%v", chatId, noteName), nButtons)
 		}
 	}

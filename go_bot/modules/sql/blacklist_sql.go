@@ -26,6 +26,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/wI2L/jettison"
+
 	"github.com/ATechnoHazard/ginko/go_bot/modules/utils/caching"
 )
 
@@ -37,13 +39,13 @@ type BlackListFilters struct {
 func AddToBlacklist(chatID string, trigger string) {
 	filter := &BlackListFilters{ChatID: chatID, Trigger: trigger}
 	SESSION.Save(filter)
-	go CacheBlacklist(chatID)
+	cacheBlacklist(chatID)
 }
 
 func RmFromBlacklist(chatID string, trigger string) bool {
 	filter := &BlackListFilters{ChatID: chatID, Trigger: trigger}
 	defer func(chatID string) {
-		go CacheBlacklist(chatID)
+		cacheBlacklist(chatID)
 	}(chatID)
 	if SESSION.Delete(filter).RowsAffected == 0 {
 		return false
@@ -54,7 +56,7 @@ func RmFromBlacklist(chatID string, trigger string) bool {
 func GetChatBlacklist(chatID string) []BlackListFilters {
 	blf, err := caching.CACHE.Get(fmt.Sprintf("blacklist_%v", chatID))
 	if err != nil {
-		go CacheBlacklist(chatID)
+		cacheBlacklist(chatID)
 	}
 
 	var blistFilters []BlackListFilters
@@ -62,9 +64,9 @@ func GetChatBlacklist(chatID string) []BlackListFilters {
 	return blistFilters
 }
 
-func CacheBlacklist(chatID string) {
+func cacheBlacklist(chatID string) {
 	var filters []BlackListFilters
 	SESSION.Where("chat_id = ?", chatID).Find(&filters)
-	blJson, _ := json.Marshal(filters)
+	blJson, _ := jettison.Marshal(filters)
 	_ = caching.CACHE.Set(fmt.Sprintf("blacklist_%v", chatID), blJson)
 }
