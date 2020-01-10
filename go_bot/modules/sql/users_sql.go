@@ -24,7 +24,6 @@ package sql
 
 import (
 	"encoding/json"
-	"log"
 	"strings"
 
 	"github.com/wI2L/jettison"
@@ -48,13 +47,11 @@ func EnsureBotInDb(u *gotgbot.Updater) {
 	// Insert bot user only if it doesn't exist already
 	botUser := &User{UserId: u.Dispatcher.Bot.Id, UserName: u.Dispatcher.Bot.UserName}
 	SESSION.Save(botUser)
+	cacheUser()
 }
 
 func UpdateUser(userId int, username string, chatId string, chatName string) {
 	username = strings.ToLower(username)
-	defer func(name string) {
-		go cacheUser()
-	}(username)
 	tx := SESSION.Begin()
 
 	// upsert user
@@ -70,20 +67,20 @@ func UpdateUser(userId int, username string, chatId string, chatName string) {
 	chat := &Chat{ChatId: chatId, ChatName: chatName}
 	tx.Save(chat)
 	tx.Commit()
+	cacheUser()
 }
 
 func GetUserIdByName(username string) *User {
 	username = strings.ToLower(username)
 
 	userJson, err := caching.CACHE.Get("users")
+	var users []User
 	if err != nil {
-		go cacheUser()
+		users = cacheUser()
 	}
 
-	log.Println(string(userJson))
-
-	var users []User
 	_ = json.Unmarshal(userJson, &users)
+
 	for _, user := range users {
 		if user.UserName == username {
 			return &user
@@ -93,11 +90,11 @@ func GetUserIdByName(username string) *User {
 	return nil
 }
 
-func cacheUser() {
-	user := &User{}
+func cacheUser() []User {
 	var users []User
-	SESSION.Model(user).Find(&users)
+	SESSION.Model(&User{}).Find(&users)
 	userJson, _ := jettison.Marshal(users)
 	err := caching.CACHE.Set("users", userJson)
 	error_handling.HandleErr(err)
+	return users
 }

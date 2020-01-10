@@ -44,29 +44,28 @@ func AddToBlacklist(chatID string, trigger string) {
 
 func RmFromBlacklist(chatID string, trigger string) bool {
 	filter := &BlackListFilters{ChatID: chatID, Trigger: trigger}
-	defer func(chatID string) {
-		cacheBlacklist(chatID)
-	}(chatID)
 	if SESSION.Delete(filter).RowsAffected == 0 {
 		return false
 	}
+	cacheBlacklist(chatID)
 	return true
 }
 
 func GetChatBlacklist(chatID string) []BlackListFilters {
 	blf, err := caching.CACHE.Get(fmt.Sprintf("blacklist_%v", chatID))
+	var blistFilters []BlackListFilters = nil
 	if err != nil {
-		cacheBlacklist(chatID)
+		blistFilters = cacheBlacklist(chatID)
 	}
 
-	var blistFilters []BlackListFilters
 	_ = json.Unmarshal(blf, &blistFilters)
 	return blistFilters
 }
 
-func cacheBlacklist(chatID string) {
+func cacheBlacklist(chatID string) []BlackListFilters {
 	var filters []BlackListFilters
 	SESSION.Where("chat_id = ?", chatID).Find(&filters)
 	blJson, _ := jettison.Marshal(filters)
 	_ = caching.CACHE.Set(fmt.Sprintf("blacklist_%v", chatID), blJson)
+	return filters
 }

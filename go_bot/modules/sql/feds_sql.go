@@ -93,9 +93,6 @@ func NewFed(ownerId string, fedId string, fedName string) bool {
 } // No dirty read
 
 func DelFed(fedId string) {
-	defer func(fedId string) {
-		unCacheFban(fedId)
-	}(fedId)
 	tx := SESSION.Begin()
 
 	fed := &Federation{}
@@ -111,6 +108,7 @@ func DelFed(fedId string) {
 	tx.Model(bans).Where("fed_ref = ?", fedId).Delete(bans)
 
 	tx.Commit()
+	unCacheFban(fedId)
 } // No dirty reads
 
 func IsUserFedAdmin(fedId string, userId string) string {
@@ -167,32 +165,25 @@ func AllFedChats(fedId string) []string {
 } // no dirty read
 
 func FbanUser(fedId string, userId string, reason string) {
-	defer func(fedId string, userId string) {
-		cacheFbans(fedId, userId)
-	}(fedId, userId)
 	ban := &FedBan{FedRef: fedId, UserId: userId, Reason: reason}
 	SESSION.Save(ban)
+	cacheFbans(fedId, userId)
 } // no dirty read
 
 func UnFbanUser(fedId string, userId string) {
-	defer func(fedId string, userId string) {
-		cacheFbans(fedId, userId)
-	}(fedId, userId)
 	ban := &FedBan{FedRef: fedId, UserId: userId}
 	SESSION.Delete(ban)
+	cacheFbans(fedId, userId)
 } // no dirty read
 
 func GetFbanUser(fedId string, userId string) *FedBan {
 	banJson, err := caching.CACHE.Get(fmt.Sprintf("fban_%v_%v", fedId, userId))
+	var ban *FedBan
 	if err != nil {
-		cacheFbans(fedId, userId)
-		return nil
+		ban = cacheFbans(fedId, userId)
 	}
-
-	var ban FedBan
-	_ = json.Unmarshal(banJson, &ban)
-
-	return &ban
+	_ = json.Unmarshal(banJson, ban)
+	return ban
 } // no dirty read
 
 func GetFbanUsersCount(fedId string) int {
@@ -234,7 +225,7 @@ func GetFedAdmins(fedId string) []FedAdmin {
 	return admins
 }
 
-func cacheFbans(fedId string, userId string) {
+func cacheFbans(fedId string, userId string) *FedBan {
 	fban := &FedBan{FedRef: fedId, UserId: userId}
 	if SESSION.First(fban).RowsAffected != 0 {
 		fJson, _ := jettison.Marshal(fban)
@@ -243,6 +234,7 @@ func cacheFbans(fedId string, userId string) {
 			log.Println(err)
 		}
 	}
+	return fban
 }
 
 func unCacheFban(fedId string) {

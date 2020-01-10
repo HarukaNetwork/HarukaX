@@ -62,9 +62,6 @@ type Button struct {
 }
 
 func AddNoteToDb(chatId string, noteName string, noteData string, msgtype int, buttons []Button, file string) {
-	defer func() {
-		cacheNote(chatId, noteName)
-	}()
 	if buttons == nil {
 		buttons = make([]Button, 0)
 	}
@@ -87,6 +84,7 @@ func AddNoteToDb(chatId string, noteName string, noteData string, msgtype int, b
 		tx.Create(btn)
 	}
 	tx.Commit()
+	cacheNote(chatId, noteName)
 }
 
 func GetNote(chatId string, noteName string) *Note {
@@ -109,9 +107,6 @@ func GetNote(chatId string, noteName string) *Note {
 
 func RmNote(chatId string, noteName string) bool {
 	tx := SESSION.Begin()
-	defer func() {
-		cacheNote(chatId, noteName)
-	}()
 	note := &Note{ChatId: chatId, Name: noteName}
 
 	if tx.First(note).RowsAffected == 0 {
@@ -127,6 +122,7 @@ func RmNote(chatId string, noteName string) bool {
 
 	tx.Delete(note)
 	tx.Commit()
+	cacheNote(chatId, noteName)
 	return true
 }
 
