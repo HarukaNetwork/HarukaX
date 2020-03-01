@@ -1,6 +1,6 @@
 FROM golang
 
-WORKDIR /go/src/github.com/ATechnoHazard/ginko
+WORKDIR /go/src/github.com/HarukaNetwork/HarukaX
 
 COPY . .
 

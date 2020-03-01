@@ -1,4 +1,4 @@
-module github.com/ATechnoHazard/ginko
+module github.com/HarukaNetwork/HarukaX
 
 go 1.12
 
@@ -15,7 +15,7 @@ require (
 	github.com/lib/pq v1.3.0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/tcnksm/go-httpstat v0.2.0
-	github.com/wI2L/jettison v0.4.1 // indirect
+	github.com/wI2L/jettison v0.4.1
 	golang.org/x/sys v0.0.0-20200107162124-548cf772de50 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 )

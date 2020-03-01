@@ -1,5 +1,5 @@
-# Ginko
-[![Actions Status](https://github.com/ATechnoHazard/ginko/workflows/CI/badge.svg)](https://github.com/ATechnoHazard/ginko/actions)
+# Haruka X
+[![Actions Status](https://github.com/HarukaNetwork/HarukaX/workflows/CI/badge.svg)](https://github.com/HarukaNetwork/HarukaX/actions)
 
 Telegram bot written in Go. Currently in alpha. Contributions are welcome.
 
@@ -33,4 +33,4 @@ It's that simple.
 ## Download source
 Contributions to this project are welcome.
 To download the source, get it like any other Go project:
- `go get -u github.com/ATechnoHazard/ginko`.
+ `go get -u github.com/HarukaNetwork/HarukaX`.
