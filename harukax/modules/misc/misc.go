@@ -157,9 +157,44 @@ func ping(_ ext.Bot, u *gotgbot.Update) error {
 	return err
 }
 
+func echo(_ ext.Bot, u *gotgbot.Update) error {
+	message := u.EffectiveMessage
+	user := u.EffectiveUser
+	sudos := harukax.BotConfig.SudoUsers
+	sudos = append(sudos, strconv.Itoa(harukax.BotConfig.OwnerId))
+
+	if !helpers.Contains(sudos, strconv.Itoa(user.Id)) {
+		_, err := message.Delete()
+		return err
+	}
+
+	splitting := strings.SplitAfter(message.Text, "/echo ")
+	lenSplit := len(splitting)
+
+	if lenSplit == 1 {
+		_, err := message.Delete()
+		return err
+	}
+
+	if splitting[1] == "" {
+		_, err := message.Delete()
+		return err
+	}
+	text := splitting[1]
+	if message.ReplyToMessage != nil {
+		message.ReplyToMessage.ReplyText(text)
+	} else {
+		message.ReplyText(text)
+	}
+
+	_, err := message.Delete()
+	return err
+}
+
 func LoadMisc(u *gotgbot.Updater) {
 	defer log.Println("Loading module misc")
 	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("id", []rune{'/', '!'}, getId))
 	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("info", []rune{'/', '!'}, info))
 	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("ping", []rune{'/', '!'}, ping))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("echo", []rune{'/', '!'}, echo))
 }
