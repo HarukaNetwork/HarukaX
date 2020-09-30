@@ -294,6 +294,39 @@ func unban(bot ext.Bot, u *gotgbot.Update, args []string) error {
 	return err
 }
 
+func banme(_ ext.Bot, u *gotgbot.Update) error {
+	chat := u.EffectiveChat
+	user := u.EffectiveUser
+	message := u.EffectiveMessage
+
+	// Permission checks
+	if u.EffectiveChat.Type == "private" {
+		_, err := u.EffectiveMessage.ReplyText("This Command is Made to be used in Group Chats, not in PM!")
+		return err
+	}
+
+	if !chats.RequireBotAdmin(chat, message) {
+		return gotgbot.EndGroups{}
+	}
+
+	if chats.IsUserAdmin(chat, user.Id) {
+		_, err := message.ReplyText("You Are An Admin, Why Are You Kidding With Me")
+		error_handling.HandleErr(err)
+		return gotgbot.EndGroups{}
+	}
+
+	_, err := chat.KickMember(user.Id)
+	if err != nil {
+		return err
+	}
+	if message.ReplyToMessage != nil {
+		_, err = message.ReplyHTMLf("Done :D")
+		return err
+	} // else {
+	_, err = message.ReplyHTMLf("Banned!")
+	return err
+}
+
 func LoadBans(u *gotgbot.Updater) {
 	defer log.Println("Loading module bans")
 	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("tban", []rune{'/', '!'}, tempBan))
@@ -301,4 +334,5 @@ func LoadBans(u *gotgbot.Updater) {
 	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("kick", []rune{'/', '!'}, kick))
 	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("kickme", []rune{'/', '!'}, kickme))
 	u.Dispatcher.AddHandler(handlers.NewPrefixArgsCommand("unban", []rune{'/', '!'}, unban))
+	u.Dispatcher.AddHandler(handlers.NewPrefixCommand("banme", []rune{'/', '!'}, banme))
 }
