@@ -1,36 +1,123 @@
 #!/bin/bash
 
+# This script will generate binaries for the multiple OS/architectures, and a file
+# containing SHA256 checksums for the binaries
+
+# Directory where the binaries will be generated - created if does not exist
+bin_path="./bin"
+
+# File containing checksums - just the file name, file will be saved inside `bin_path`
+checksums="checksums.txt"
+
+# Basename for the generated binaries - name of the project for example
+basename="harukax"
+
+# Release version - can be blank if needed; if blank, will be populated by command-line
+# arguments passed while running this script (if any).
+version=""
+
+if [[ "${version}" == "" ]]; then
+  # If empty, populate `version` with the first argument passed to the script
+  version="${1}"
+fi
+
+# Name pattern used for files being generated - will be appended with build system info
+file_name="${basename}_${version}_"
+
+# The final file path
+full_path="${bin_path}/${file_name}"
+
+# Remove existing binaries (if any)
+rm -f "${full_path}"** # force-flag ensures no error message if no file is found
+
+# Ensure `bin_path` exists, created if does not exist, ignored otherwise
+mkdir -p "${bin_path}"
+
+echo -e "\n\tGenerating binaries\n"
+
 # Build linux targets
-echo "Building for linux"
+echo -e "\nBuilding for Linux"
+echo -n " -> Targeting x86_64" # `-n` skips newline at the end
+env GOOS=linux GOARCH=amd64 go build -o "${full_path}linux_x86_64"
+echo -e ": Done"
 
-echo "Building x86_64"
-env GOOS=linux GOARCH=amd64 go build -o build/harukax_linux_x86_64
+echo -n " -> Targeting x86"
+env GOOS=linux GOARCH=386 go build -o "${full_path}linux_x86"
+echo -e ": Done"
 
-echo "Building x86"
-env GOOS=linux GOARCH=386 go build -o build/harukax_linux_x86
+echo -n " -> Targeting ARM"
+env GOOS=linux GOARCH=arm go build -o "${full_path}linux_arm"
+echo -e ": Done"
 
-echo "Building arm"
-env GOOS=linux GOARCH=arm go build -o build/harukax_linux_arm
-
-echo "Building arm64"
-env GOOS=linux GOARCH=arm64 go build -o build/harukax_linux_arm64
+echo -n " -> Targeting ARM64"
+env GOOS=linux GOARCH=arm64 go build -o "${full_path}linux_arm64"
+echo -e ": Done"
 
 # Build windows targets
-echo
-echo "Building for windows"
+echo -e "\n\nBuilding for Windows"
 
-echo "Building x86_64"
-env GOOS=windows GOARCH=amd64 go build -o build/harukax_win_x86_64.exe
+echo -n " -> Targeting x86_64"
+env GOOS=windows GOARCH=amd64 go build -o "${full_path}windows_x86_64.exe"
+echo -e ": Done"
 
-echo "Building x86"
-env GOOS=windows GOARCH=386 go build -o build/harukax_win_x86.exe
+echo -n " -> Targeting x86"
+env GOOS=windows GOARCH=386 go build -o "${full_path}windows_x86.exe"
+echo -e ": Done"
 
 # Build mac targets
-echo
-echo "Building for MacOS"
+echo -e "\n\nBuilding for MacOS"
 
-echo "Building x86_64"
-env GOOS=darwin GOARCH=amd64 go build -o build/harukax_darwin_x86_64
+echo -n " -> Targeting x86_64"
+env GOOS=darwin GOARCH=amd64 go build -o "${full_path}darwin_x86_64"
+echo -e ": Done"
 
-echo "Building x86"
-env GOOS=darwin GOARCH=386 go build -o build/harukax_darwin_x86
+echo -n " -> Targeting ARM64"
+env GOOS=darwin GOARCH=arm64 go build -o "${full_path}darwin_arm64"
+echo -e ": Done"
+
+echo -e "\nBinaries Generated Successfully!"
+echo -ne "\nGenerating Checksums"
+
+echo -e ": Done"
+echo -ne "Archiving Binaries"
+
+cd "${bin_path}" || exit # Exit if `cd` fails
+
+# Zip the windows executables
+if ! command -v zip >/dev/null; then
+  echo -e "\tZip not found, unable to generate archives for Windows executables"
+else
+
+  # Iterating through each executable file - to generate individual `.zip` files
+  for file in "${file_name}"**".exe"; do
+    zip_name="${file//.exe/}" # form name of the zip file - remove `.exe`
+
+    # Create a zip container for the file, the `-m` flag deletes the original file
+    zip "${zip_name}.zip" "${file}" -q -m
+  done
+fi
+
+# Run GZip on Linux/Mac binaries
+if ! command -v gzip >/dev/null; then
+  echo -e "\tGZip not found, unable to generate archives"
+else
+  for file in "${file_name}"**; do
+    if [[ "${file}" == "${file_name}"**".zip" ]]; then
+      # Skip iteration over zip files
+      continue
+    fi
+
+    gzip "${file}" -q
+  done
+fi
+
+# Empty the checksums file - will create one if does not exist
+echo -ne "" >"${checksums}"
+
+# Add these checksums to the text file as well
+for file in "${file_name}"**; do
+  sha256sum "$file" >>"${checksums}"
+done
+
+echo -e ": Done"
+echo -e "\nExecution completed successfully \nBinaries stored in: \"${bin_path}\" \n"
