@@ -33,11 +33,17 @@ github.com/lib/pq
 github.com/lib/pq/hstore
 github.com/lib/pq/oid
 github.com/lib/pq/scram
+# github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+github.com/modern-go/concurrent
+# github.com/modern-go/reflect2 v1.0.1
+github.com/modern-go/reflect2
 # github.com/pkg/errors v0.8.1
 github.com/pkg/errors
 # github.com/sirupsen/logrus v1.4.2
 github.com/sirupsen/logrus
 # github.com/tcnksm/go-httpstat v0.2.0
 github.com/tcnksm/go-httpstat
-# golang.org/x/sys v0.0.0-20200107162124-548cf772de50
+# github.com/wI2L/jettison v0.4.1
+github.com/wI2L/jettison
+# golang.org/x/sys v0.1.0
 golang.org/x/sys/unix
